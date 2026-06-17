@@ -1,0 +1,8 @@
+.env
+config/homelab.env
+rclone/rclone.conf
+*.local
+secrets/
+runtime/
+logs/
+*.log

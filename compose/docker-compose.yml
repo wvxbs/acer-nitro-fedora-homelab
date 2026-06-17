@@ -1,0 +1,76 @@
+name: nitro-homelab
+
+services:
+  plex:
+    image: lscr.io/linuxserver/plex:latest
+    container_name: plex
+    profiles: ["media"]
+    network_mode: host
+    restart: unless-stopped
+    environment:
+      PUID: "${PUID}"
+      PGID: "${PGID}"
+      TZ: "${TZ}"
+      VERSION: docker
+      PLEX_CLAIM: "${PLEX_CLAIM}"
+      ADVERTISE_IP: "${PLEX_ADVERTISE_IP}"
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,video,utility
+    volumes:
+      - "${APPDATA_DIR}/plex:/config"
+      - "${MEDIA_DIR}:/media"
+      - "${TRANSCODE_DIR}:/transcode"
+    devices:
+      - /dev/dri:/dev/dri
+    gpus: all
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    profiles: ["ops"]
+    restart: unless-stopped
+    ports:
+      - "9443:9443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - "${APPDATA_DIR}/portainer:/data"
+
+  dozzle:
+    image: amir20/dozzle:latest
+    container_name: dozzle
+    profiles: ["ops"]
+    restart: unless-stopped
+    ports:
+      - "9999:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    profiles: ["ai"]
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    environment:
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+    volumes:
+      - "${OLLAMA_MODELS_DIR}:/root/.ollama"
+    gpus: all
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    profiles: ["ai"]
+    restart: unless-stopped
+    depends_on:
+      - ollama
+    ports:
+      - "3000:8080"
+    environment:
+      OLLAMA_BASE_URL: http://ollama:11434
+      WEBUI_AUTH: "true"
+    volumes:
+      - "${APPDATA_DIR}/open-webui:/app/backend/data"
+

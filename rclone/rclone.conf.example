@@ -1,0 +1,15 @@
+# Do not commit your real rclone.conf.
+# Create it on the server with:
+#   rclone config
+#
+# Expected remote name in config/homelab.env:
+#   RCLONE_REMOTE_NAME=onedrive
+#
+# Example shape only:
+#
+# [onedrive]
+# type = onedrive
+# token = REDACTED
+# drive_id = REDACTED
+# drive_type = personal
+
