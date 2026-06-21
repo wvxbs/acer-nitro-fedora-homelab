@@ -1,0 +1,40 @@
+{
+  auto_https off
+  admin off
+}
+
+http://nitro.lan {
+  respond "nitro-homelab reverse proxy online" 200
+}
+
+http://cockpit.nitro.lan {
+  reverse_proxy https://127.0.0.1:9090 {
+    transport http {
+      tls_insecure_skip_verify
+    }
+  }
+}
+
+http://adguard.nitro.lan {
+  reverse_proxy http://127.0.0.1:3001
+}
+
+http://telemetry.nitro.lan {
+  reverse_proxy http://127.0.0.1:8501
+}
+
+http://plex.nitro.lan {
+  reverse_proxy http://127.0.0.1:32400
+}
+
+http://portainer.nitro.lan {
+  reverse_proxy https://127.0.0.1:9443 {
+    transport http {
+      tls_insecure_skip_verify
+    }
+  }
+}
+
+http://dozzle.nitro.lan {
+  reverse_proxy http://127.0.0.1:9999
+}

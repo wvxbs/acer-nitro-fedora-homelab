@@ -86,3 +86,16 @@ services:
     volumes:
       - "${APPDATA_DIR}/adguard/work:/opt/adguardhome/work"
       - "${APPDATA_DIR}/adguard/conf:/opt/adguardhome/conf"
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: caddy
+    profiles: ["proxy"]
+    network_mode: host
+    cap_add:
+      - NET_BIND_SERVICE
+    restart: unless-stopped
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - "${APPDATA_DIR}/caddy/data:/data"
+      - "${APPDATA_DIR}/caddy/config:/config"
