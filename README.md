@@ -1,98 +1,135 @@
-# Acer Nitro Proxmox Homelab
+# Acer Nitro Fedora Homelab
 
-Bootstrap para reaproveitar um Acer Nitro 5 com i5-9300H, GTX 1650, SSD de 256 GB e HD externo de 512 GB como homelab Proxmox.
+Bootstrap para reaproveitar um Acer Nitro 5 com i5-9300H, GTX 1650, SSD de 256 GB e HD externo de 512 GB como servidor Fedora Server.
 
-O desenho atual e deliberado:
+O objetivo e rodar tudo com o minimo de friccao:
 
-- Proxmox VE no metal.
-- GPU NVIDIA no host Proxmox, nao passthrough como plano principal.
-- LXC `media` privilegiado com acesso a `/dev/nvidia*` e `/dev/dri`.
-- Plex instalado nativo no LXC para reduzir atrito com NVIDIA.
-- Rclone pull-only dentro do LXC: OneDrive -> HD externo.
-- Tailscale no host para acesso sem abrir portas.
-- Docker/Compose opcional para workloads gerais sem GPU.
-
-## Por Que Proxmox
-
-O objetivo mudou de "Fedora Server com Docker" para "homelab Proxmox com GPU funcionando". Em notebook com dGPU NVIDIA/Optimus, passthrough PCI para VM pode funcionar, mas e a parte menos garantivel. O caminho mais robusto e manter o driver no host e expor os device nodes para um LXC de media.
+- Fedora Server com SSH, tampa fechada sem suspender e firewall basico.
+- Docker Engine + Compose.
+- Driver NVIDIA + NVIDIA Container Toolkit para Plex transcoding, upscaling e workloads CUDA.
+- Plex em container com suporte a GPU.
+- Rclone em modo pull-only: OneDrive -> HD externo, sem sincronizar mudancas locais de volta.
+- Acesso sem abrir portas usando Tailscale.
+- Perfil opcional de IA local com Ollama e Open WebUI.
 
 ## Uso Rapido
 
-No Proxmox VE recem-instalado:
+No Fedora Server recem-instalado:
 
 ```bash
-apt update
-apt install -y git
-git clone https://github.com/wvxbs/acer-nitro-fedora-homelab.git
+sudo dnf install -y git
+git clone https://github.com/SEU_USUARIO/acer-nitro-fedora-homelab.git
 cd acer-nitro-fedora-homelab
 cp config/homelab.env.example config/homelab.env
 nano config/homelab.env
-./scripts/bootstrap.sh
-reboot
-./scripts/healthcheck.sh
+sudo ./scripts/bootstrap.sh
 ```
 
-Sim, o nome remoto ainda contem `fedora` por historico. A arquitetura atual do repo e Proxmox-first.
+Se voce ainda nao tiver subido o repo para o GitHub, pode copiar esta pasta por SSH/pendrive e rodar localmente.
 
-## Ordem Recomendada
+## Ordem Recomendada no Dia
 
-1. Instale Proxmox VE no SSD interno.
-2. Use Ethernet no notebook, se possivel.
-3. Desative Secure Boot na BIOS para evitar assinatura de modulo NVIDIA.
-4. Rode o bootstrap.
-5. Reinicie para carregar driver NVIDIA.
-6. Rode `./scripts/healthcheck.sh`.
-7. Abra o Plex em `http://IP_DO_CT_MEDIA:32400/web`.
-8. Configure `rclone config` dentro do CT `media`.
-9. Habilite o timer de pull-only dentro do CT.
+1. Instale Fedora Server.
+2. Conecte o notebook por cabo Ethernet, se possivel.
+3. Rode o bootstrap.
+4. Reinicie depois da instalacao NVIDIA.
+5. Rode `./scripts/healthcheck.sh`.
+6. Configure o rclone com `rclone config`.
+7. Habilite o timer de download do OneDrive:
 
-## Layout
+```bash
+sudo systemctl enable --now rclone-onedrive-pull.timer
+```
+
+8. Suba os containers:
+
+```bash
+cd /opt/homelab
+docker compose --profile media up -d
+```
+
+Para IA local:
+
+```bash
+cd /opt/homelab
+docker compose --profile ai up -d
+```
+
+## Rede Sem Abrir Portas
+
+O caminho de menor dor para sua rede com dois roteadores e sem port-forward e Tailscale. Ele usa conexoes de saida e cria uma rede privada entre seus dispositivos.
+
+- Da rede de casa, voce acessa pelo IP local ou pelo nome `.local`.
+- Da rede do escritorio, voce acessa pelo IP Tailscale ou MagicDNS.
+- Nao precisa abrir portas no roteador da Vivo nem no roteador Wi-Fi 6E.
+
+Opcionalmente, se o roteador de casa puder operar em modo AP/bridge, isso simplifica tudo na LAN. Mas o setup deste repo nao depende disso.
+
+## Armazenamento
 
 Por padrao:
 
-- Host Proxmox: virtualizacao, driver NVIDIA, storage bind mounts, Tailscale.
-- CT 120 `media`: Plex, rclone, acesso a GPU e midia.
-- SSD interno: `/srv/appdata`, configs, bancos, transcode.
-- HD externo: `/srv/storage`, midia e rips.
+- SSD interno: `/srv/appdata`, `/srv/docker`, caches e bancos dos containers.
+- HD externo 5400 rpm: `/srv/storage`, midia e rips.
+- Midia final: `/srv/storage/media`.
+- Downloads/pull do OneDrive: `/srv/storage/incoming/onedrive`.
 
-## Comandos Uteis
+O script nao formata discos automaticamente. Ele so cria ponto de montagem via UUID se voce preencher `EXTERNAL_DISK_UUID`.
 
-Verificar GPU no host:
+## OneDrive Pull-Only
 
-```bash
-nvidia-smi
-```
-
-Verificar GPU no CT:
+O rclone roda como timer systemd e executa:
 
 ```bash
-pct exec 120 -- nvidia-smi
+rclone sync "$ONEDRIVE_REMOTE:$ONEDRIVE_PATH" "$ONEDRIVE_LOCAL_PATH"
 ```
 
-Entrar no CT:
+Isso faz a maquina refletir a pasta do OneDrive. Mudancas locais nao sao enviadas para o OneDrive. Se voce apagar localmente, o proximo pull baixa de novo, desde que o arquivo ainda exista no OneDrive.
+
+## GPU
+
+A GTX 1650 deve aparecer em containers com:
 
 ```bash
-pct enter 120
+docker run --rm --gpus all nvidia/cuda:12.5.1-base-ubuntu22.04 nvidia-smi
 ```
 
-Configurar OneDrive dentro do CT:
+O Plex recebe `NVIDIA_VISIBLE_DEVICES=all`. Para transcoding por hardware, ainda e preciso:
+
+- Plex Pass ativo.
+- Habilitar hardware transcoding nas configuracoes do Plex.
+- Evitar fechar o notebook de um jeito que abafe a saida de ar.
+
+## IA Local
+
+A GTX 1650 normalmente tem 4 GB de VRAM. Ela aguenta modelos pequenos/quantizados, mas nao espere milagres:
+
+- Bons candidatos: Llama 3.2 1B/3B, Phi-3 mini quantizado, Qwen2.5 3B quantizado.
+- Use Ollama/Open WebUI para uma experiencia simples.
+- Para workloads pesados, o limite sera VRAM, temperatura e energia.
+
+Depois de subir o perfil `ai`:
 
 ```bash
-pct enter 120
-su - plex
-rclone config
-rclone lsd onedrive:
-exit
-systemctl enable --now rclone-onedrive-pull.timer
+docker exec -it ollama ollama pull llama3.2:3b
 ```
 
-## O Que Nao E Garantido
-
-GPU passthrough completa da GTX 1650 para uma VM nao e o plano A. Em notebook com Optimus isso depende de IOMMU groups, firmware, VBIOS e comportamento especifico da placa. Este repo foca no caminho mais confiavel para Plex/Jellyfin: driver no host + LXC com devices NVIDIA.
+Open WebUI fica em `http://HOST:3000`.
 
 ## Arquivos Locais Que Nao Devem Ir Para o Git
 
 - `config/homelab.env`
 - `rclone/rclone.conf`
-- chaves SSH, tokens, claims Plex permanentes
+- qualquer chave SSH ou token
 - dumps, logs e diretorios `runtime/`
+
+## Publicar no GitHub
+
+Com `gh` autenticado:
+
+```bash
+git init
+git add .
+git commit -m "Initial Fedora homelab bootstrap"
+gh repo create acer-nitro-fedora-homelab --public --source=. --remote=origin --push
+```

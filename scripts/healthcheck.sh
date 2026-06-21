@@ -5,8 +5,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$ROOT/scripts/lib.sh"
 load_config
 
-log "Proxmox host"
-pveversion || true
+log "System"
 hostnamectl || true
 uptime || true
 
@@ -14,20 +13,18 @@ log "Network"
 ip -brief address || true
 tailscale status || true
 
-log "NVIDIA host"
-lsmod | grep -E '^nvidia' || true
-nvidia-smi || true
+log "Docker"
+docker version || true
+docker compose version || true
 
-log "Media CT"
-pct status "$MEDIA_CT_ID" || true
-pct config "$MEDIA_CT_ID" || true
-if pct_is_running "$MEDIA_CT_ID"; then
-  pct exec "$MEDIA_CT_ID" -- hostname -I || true
-  pct exec "$MEDIA_CT_ID" -- nvidia-smi || true
-  pct exec "$MEDIA_CT_ID" -- systemctl --no-pager --full status plexmediaserver || true
-  pct exec "$MEDIA_CT_ID" -- systemctl list-timers rclone-onedrive-pull.timer || true
-fi
+log "NVIDIA"
+nvidia-smi || true
+docker run --rm --gpus all nvidia/cuda:12.5.1-base-ubuntu22.04 nvidia-smi || true
 
 log "Storage"
 df -h "$APPDATA_DIR" "$EXTERNAL_MOUNTPOINT" "$MEDIA_DIR" 2>/dev/null || df -h
 lsblk -o NAME,SIZE,FSTYPE,LABEL,UUID,MOUNTPOINTS || true
+
+log "Rclone"
+rclone listremotes || true
+systemctl list-timers rclone-onedrive-pull.timer || true

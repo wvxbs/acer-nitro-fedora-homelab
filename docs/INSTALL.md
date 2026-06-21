@@ -1,88 +1,73 @@
 # Install Guide
 
-## Base: Proxmox VE
+## Fedora Server
 
-Use Proxmox VE on the internal SSD. During install:
+Use Fedora Server, not Workstation. During install:
 
-- Prefer Ethernet.
-- Use the SSD internal as the Proxmox system disk.
-- Keep the external 5400 rpm disk for media, not VM storage.
-- Disable Secure Boot in firmware for the lowest-friction NVIDIA path.
-- Create a strong root password and keep the web UI on LAN/Tailscale only.
+- Enable OpenSSH if the installer offers it.
+- Keep automatic partitioning unless you want a custom layout.
+- Use Ethernet if available.
+- Create your normal admin user.
 
 After first boot:
 
 ```bash
-apt update
-apt install -y git
-git clone https://github.com/wvxbs/acer-nitro-fedora-homelab.git
+sudo dnf install -y git
+git clone https://github.com/SEU_USUARIO/acer-nitro-fedora-homelab.git
 cd acer-nitro-fedora-homelab
 cp config/homelab.env.example config/homelab.env
 nano config/homelab.env
-./scripts/bootstrap.sh
-reboot
+sudo ./scripts/bootstrap.sh
+sudo reboot
 ./scripts/healthcheck.sh
 ```
 
 ## Config Values You Probably Want
 
 ```bash
-HOMELAB_HOSTNAME=nitro-pve
-PROXMOX_BRIDGE=vmbr0
-MEDIA_CT_ID=120
-MEDIA_CT_HOSTNAME=media
-MEDIA_CT_MEMORY=4096
-MEDIA_CT_CORES=2
+HOMELAB_HOSTNAME=nitro-homelab
+ADMIN_USER=seu_usuario_no_fedora
+INSTALL_TAILSCALE=1
 EXTERNAL_DISK_UUID=uuid-do-hd-externo
 RCLONE_REMOTE_NAME=onedrive
 ONEDRIVE_PATH=Rips/DVD
+ONEDRIVE_LOCAL_PATH=/srv/storage/incoming/onedrive
+MEDIA_DIR=/srv/storage/media
 ```
 
-Find the disk UUID on the Proxmox host:
+Find the disk UUID:
 
 ```bash
 lsblk -o NAME,SIZE,FSTYPE,LABEL,UUID,MOUNTPOINTS
 ```
 
-## What the Bootstrap Does
+## First Container Start
 
-1. Updates the Proxmox host and installs basic tools.
-2. Keeps the laptop awake with the lid closed.
-3. Mounts the external disk if `EXTERNAL_DISK_UUID` is set.
-4. Installs Tailscale on the host.
-5. Installs the NVIDIA driver on the host.
-6. Downloads a Debian LXC template.
-7. Creates CT `media`.
-8. Bind-mounts media/appdata/transcode paths into the CT.
-9. Exposes `/dev/nvidia*` and `/dev/dri` to the CT.
-10. Installs Plex and rclone inside the CT.
+```bash
+cd /opt/homelab
+docker compose --profile media --profile ops up -d
+```
+
+Plex uses host networking:
+
+- Web UI: `http://HOST:32400/web`
+- Media path inside Plex: `/media`
+- Transcode path inside Plex: `/transcode`
 
 ## Rclone
 
-Configure OneDrive inside the media CT:
+Configure OneDrive as the normal Fedora user:
 
 ```bash
-pct enter 120
-su - plex
 rclone config
 rclone lsd onedrive:
-exit
-systemctl enable --now rclone-onedrive-pull.timer
+sudo systemctl enable --now rclone-onedrive-pull.timer
 ```
 
 Manual one-shot run:
 
 ```bash
-pct exec 120 -- systemctl start rclone-onedrive-pull.service
-pct exec 120 -- journalctl -u rclone-onedrive-pull.service -n 100 --no-pager
-pct exec 120 -- tail -f /var/log/rclone/onedrive-pull.log
+sudo systemctl start rclone-onedrive-pull.service
+journalctl -u rclone-onedrive-pull.service -n 100 --no-pager
+tail -f /var/log/rclone/onedrive-pull.log
 ```
-
-## Plex
-
-Plex runs inside CT `media`:
-
-- Web UI: `http://IP_DO_CT:32400/web`
-- Media path inside Plex: `/media`
-- Transcode path inside Plex: `/transcode`
-- Incoming OneDrive path: `/incoming/onedrive`

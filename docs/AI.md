@@ -1,17 +1,46 @@
-# Local AI
+# Local AI Notes
 
-The GTX 1650 usually has 4 GB VRAM. Treat local AI as a small-model playground, not a serious inference server.
+The GTX 1650 is useful, but modest. Most Nitro 5 GTX 1650 configs have 4 GB VRAM, so the sweet spot is small quantized models.
 
-Recommended starting point on Proxmox:
+## Start
 
-- Keep Plex/GPU media as the priority.
-- Run AI in a separate CT or VM only after media is stable.
-- Prefer CPU or very small quantized models unless you confirm GPU memory headroom.
+Set this in `config/homelab.env` before bootstrap, or run the script later:
 
-Good candidates:
+```bash
+INSTALL_AI=1
+```
 
-- Llama 3.2 1B/3B quantized.
-- Phi-3 mini quantized.
-- Qwen small models quantized.
+Start services:
 
-Avoid putting heavy AI and Plex transcoding on the GPU at the same time. The card is useful, but VRAM and thermals are the hard limits.
+```bash
+cd /opt/homelab
+docker compose --profile ai up -d
+```
+
+Pull a small model:
+
+```bash
+docker exec -it ollama ollama pull llama3.2:3b
+docker exec -it ollama ollama run llama3.2:3b
+```
+
+Other candidates:
+
+```bash
+docker exec -it ollama ollama pull phi3:mini
+docker exec -it ollama ollama pull qwen2.5:3b
+```
+
+Open WebUI:
+
+```text
+http://HOST:3000
+```
+
+## Expectations
+
+- Good: chat with small models, embeddings, light coding help, summaries.
+- Possible but limited: upscaling/transcoding adjacent workflows and small vision models.
+- Not ideal: large LLMs, high concurrency, giant context windows.
+
+If a model does not fit in VRAM, Ollama may spill to CPU and get slow.
