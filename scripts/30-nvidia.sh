@@ -14,7 +14,7 @@ dnf install -y \
   "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm"
 
 dnf upgrade -y --refresh
-dnf_install akmod-nvidia xorg-x11-drv-nvidia-cuda xorg-x11-drv-nvidia-power libva-utils
+dnf_install "kernel-devel-$(uname -r)" akmod-nvidia xorg-x11-drv-nvidia-cuda xorg-x11-drv-nvidia-power libva-utils
 dnf install -y nvidia-vaapi-driver || warn "Optional package nvidia-vaapi-driver is unavailable on this Fedora/RPM Fusion release. Continuing without VA-API bridge."
 
 curl -fsSL https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo \
