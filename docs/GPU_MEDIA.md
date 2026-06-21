@@ -1,15 +1,43 @@
 # GPU, Plex and Video Workloads
 
+## Strategy
+
+Plan A is not PCI passthrough. Plan A is:
+
+```text
+Proxmox host NVIDIA driver
+  -> /dev/nvidia* exposed to privileged LXC
+  -> Plex/Jellyfin uses NVENC/NVDEC inside LXC
+```
+
+This is intentionally less flashy than VM passthrough and much more realistic for a laptop dGPU.
+
 ## Validate NVIDIA
 
-After reboot:
+After reboot on the Proxmox host:
 
 ```bash
 nvidia-smi
-docker run --rm --gpus all nvidia/cuda:12.5.1-base-ubuntu22.04 nvidia-smi
 ```
 
-If `nvidia-smi` fails after reboot, check whether Secure Boot is enabled. Fedora can require module signing/MOK enrollment for the proprietary NVIDIA driver when Secure Boot is on. The lowest-friction homelab path is usually disabling Secure Boot in firmware.
+Inside CT `media`:
+
+```bash
+pct exec 120 -- nvidia-smi
+```
+
+If host `nvidia-smi` fails:
+
+- Check Secure Boot. Disable it unless you want to manage module signing.
+- Confirm the NVIDIA device appears with `lspci -nn | grep -i nvidia`.
+- Reboot once after driver installation.
+- Check DKMS logs with `dkms status` and `journalctl -k`.
+
+If CT `nvidia-smi` fails but host works:
+
+- Check `/etc/pve/lxc/120.conf` has the `homelab-nvidia` block.
+- Restart the CT: `pct stop 120 && pct start 120`.
+- Confirm device nodes exist on host: `ls -l /dev/nvidia* /dev/dri`.
 
 ## Plex Hardware Transcoding
 
@@ -17,14 +45,8 @@ Requirements:
 
 - Plex Pass.
 - Hardware transcoding enabled in Plex settings.
-- Container started with the `media` profile.
-
-Start:
-
-```bash
-cd /opt/homelab
-docker compose --profile media up -d
-```
+- Plex running inside the media CT.
+- `/transcode` mapped to SSD-backed appdata.
 
 Watch GPU activity:
 
@@ -34,10 +56,19 @@ watch -n 1 nvidia-smi
 
 ## Upscaling
 
-The repo does not install a dedicated upscaler by default because the best tool depends on your workflow. Good next additions:
+The GTX 1650 is useful for NVENC/NVDEC and small GPU jobs. It is not a miracle card for heavy AI upscaling. Good later additions:
 
-- Video2X in a separate container for batch jobs.
-- ffmpeg with NVENC/NVDEC for transcode jobs.
-- Tdarr or Unmanic for automated library processing.
+- Tdarr or Unmanic in a separate CT/VM for library processing.
+- ffmpeg jobs with NVENC/NVDEC.
+- Video2X only for selective batch jobs.
 
-The base NVIDIA Docker runtime is installed so those can be added as Compose services later.
+## VM Passthrough
+
+GPU passthrough to a VM is plan B. Before trying it, collect:
+
+```bash
+find /sys/kernel/iommu_groups/ -type l | sort -V
+lspci -nnk | grep -A3 -Ei 'nvidia|vga|3d'
+```
+
+Only attempt passthrough if the IOMMU groups are sane and you are prepared to debug VBIOS/Optimus behavior.

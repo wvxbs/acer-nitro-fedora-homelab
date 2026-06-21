@@ -1,55 +1,28 @@
 # Network Plan
 
-Your topology sounds like:
+## Default
 
-```text
-Internet
-  |
-Vivo router in office
-  |
-Cat 6/6e cable
-  |
-Home Wi-Fi 6E router
-  |
-Nitro homelab + home machines
-```
+Use Tailscale on the Proxmox host. This avoids opening ports on the Vivo router or the Wi-Fi 6E router.
 
-## Recommended Setup
+Access patterns:
 
-Use Ethernet for the Nitro if convenient. It is more stable for Plex, Docker pulls and big file transfers.
+- Proxmox web UI: LAN IP or Tailscale IP, port `8006`.
+- Plex: media CT LAN IP or Tailscale route, port `32400`.
+- SSH: Tailscale SSH or normal SSH to host.
 
-Use Tailscale for access across both sides of the network without opening ports:
+## Two Routers
 
-```bash
-sudo tailscale up --ssh
-tailscale ip -4
-```
+Your network has a router in the office and another router at home. The low-friction plan is:
 
-Then access:
+- Put the Acer on Ethernet when possible.
+- Keep services reachable by Tailscale.
+- Avoid port-forwarding.
+- Optional later improvement: make the home router AP/bridge if it supports that cleanly.
 
-- SSH: `ssh user@nitro-homelab` if MagicDNS is enabled, or `ssh user@TAILSCALE_IP`.
-- Plex: `http://TAILSCALE_IP:32400/web`.
-- Open WebUI: `http://TAILSCALE_IP:3000`.
-- Portainer: `https://TAILSCALE_IP:9443`.
+## Host vs CT
 
-The bootstrap opens these ports in the Fedora firewall: `22/tcp`, `32400/tcp`, `3000/tcp`, `9443/tcp`, `9999/tcp`, `11434/tcp`, plus mDNS. That is local host firewall only; it does not open router/NAT access from the internet.
+Tailscale on the host is enough for administration. If you want direct MagicDNS names per service, install Tailscale inside the CT later, but start simple.
 
-## If You Want Pure LAN Access From Office to Home
+## Firewall
 
-That usually needs one of these:
-
-- Put the home router in AP/bridge mode, so everything is one LAN.
-- Add a static route on the Vivo router pointing the home subnet to the home router.
-- Avoid double NAT by making the home router the only router.
-
-Those options depend on router firmware and are more annoying than Tailscale. This kit keeps the router config minimal.
-
-## Local Names
-
-The bootstrap installs Avahi/mDNS, so from many devices on the same LAN:
-
-```text
-nitro-homelab.local
-```
-
-Across Tailscale, prefer MagicDNS.
+Proxmox normally exposes its web UI on `8006`. Do not expose this to the public internet. Keep admin access on LAN/Tailscale.

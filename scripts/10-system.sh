@@ -5,14 +5,16 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$ROOT/scripts/lib.sh"
 require_root
 load_config
+require_proxmox
 
-log "System baseline"
+log "Proxmox host baseline"
 
 hostnamectl set-hostname "$HOMELAB_HOSTNAME"
 timedatectl set-timezone "$TZ"
 
-dnf upgrade -y --refresh
-dnf_install htop btop iotop iftop lm_sensors smartmontools hdparm nvme-cli usbutils pciutils lsof jq rsync tmux
+apt-get update
+DEBIAN_FRONTEND=noninteractive apt-get full-upgrade -y
+apt_install htop btop iotop iftop lm-sensors smartmontools hdparm nvme-cli lsof rsync tmux ethtool
 
 log "Preventing suspend when the lid closes"
 install -d -m 0755 /etc/systemd/logind.conf.d
@@ -25,12 +27,9 @@ IdleAction=ignore
 EOF
 systemctl restart systemd-logind || true
 
-log "Creating service directories"
-install -d -m 0755 "$APPDATA_DIR" "$EXTERNAL_MOUNTPOINT" "$MEDIA_DIR" "$TRANSCODE_DIR" "$HOMELAB_ROOT"
-chown -R "$ADMIN_USER":"$ADMIN_USER" "$APPDATA_DIR" "$HOMELAB_ROOT" || true
+log "Creating host directories"
+install -d -m 0755 "$APPDATA_DIR" "$EXTERNAL_MOUNTPOINT" "$MEDIA_DIR" "$TRANSCODE_DIR" "$ONEDRIVE_LOCAL_PATH"
 
-log "Enabling useful services"
-enable_now systemd-timesyncd.service || true
+log "Enabling useful host services"
 enable_now fstrim.timer || true
-systemctl enable smartd.service || true
-
+systemctl enable smartmontools.service || true
