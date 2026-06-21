@@ -27,4 +27,4 @@ lsblk -o NAME,SIZE,FSTYPE,LABEL,UUID,MOUNTPOINTS || true
 
 log "Rclone"
 rclone listremotes || true
-systemctl list-timers rclone-onedrive-pull.timer || true
+systemctl status rclone-onedrive-mount.service --no-pager || true

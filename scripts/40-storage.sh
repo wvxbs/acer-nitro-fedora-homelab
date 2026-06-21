@@ -8,7 +8,7 @@ load_config
 
 log "Configuring storage"
 
-install -d -m 0755 "$EXTERNAL_MOUNTPOINT" "$MEDIA_DIR" "$ONEDRIVE_LOCAL_PATH" "$APPDATA_DIR" "$TRANSCODE_DIR"
+install -d -m 0755 "$EXTERNAL_MOUNTPOINT" "$MEDIA_DIR" "$ONEDRIVE_MOUNT_PATH" "$APPDATA_DIR" "$TRANSCODE_DIR" "$RCLONE_CACHE_DIR"
 
 if [[ -n "$EXTERNAL_DISK_UUID" ]]; then
   if ! grep -q "$EXTERNAL_DISK_UUID" /etc/fstab; then

@@ -16,6 +16,7 @@ http://nitro.lan
 http://adguard.nitro.lan
 http://cockpit.nitro.lan
 http://telemetry.nitro.lan
+http://jellyfin.nitro.lan
 http://plex.nitro.lan
 http://portainer.nitro.lan
 http://dozzle.nitro.lan
@@ -44,6 +45,7 @@ nitro.lan              -> 192.168.15.8
 adguard.nitro.lan      -> 192.168.15.8
 cockpit.nitro.lan      -> 192.168.15.8
 telemetry.nitro.lan    -> 192.168.15.8
+jellyfin.nitro.lan     -> 192.168.15.8
 plex.nitro.lan         -> 192.168.15.8
 portainer.nitro.lan    -> 192.168.15.8
 dozzle.nitro.lan       -> 192.168.15.8

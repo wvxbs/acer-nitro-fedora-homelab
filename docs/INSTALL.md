@@ -31,7 +31,7 @@ INSTALL_TAILSCALE=1
 EXTERNAL_DISK_UUID=uuid-do-hd-externo
 RCLONE_REMOTE_NAME=onedrive
 ONEDRIVE_PATH=Rips/DVD
-ONEDRIVE_LOCAL_PATH=/srv/storage/incoming/onedrive
+ONEDRIVE_MOUNT_PATH=/srv/storage/media/onedrive
 MEDIA_DIR=/srv/storage/media
 ```
 
@@ -54,20 +54,20 @@ Plex uses host networking:
 - Media path inside Plex: `/media`
 - Transcode path inside Plex: `/transcode`
 
-## Rclone
+## Rclone Mount
 
 Configure OneDrive as the normal Fedora user:
 
 ```bash
 rclone config
 rclone lsd onedrive:
-sudo systemctl enable --now rclone-onedrive-pull.timer
+sudo systemctl enable --now rclone-onedrive-mount.service
 ```
 
 Manual one-shot run:
 
 ```bash
-sudo systemctl start rclone-onedrive-pull.service
-journalctl -u rclone-onedrive-pull.service -n 100 --no-pager
-tail -f /var/log/rclone/onedrive-pull.log
+sudo systemctl start rclone-onedrive-mount.service
+journalctl -u rclone-onedrive-mount.service -n 100 --no-pager
+tail -f /var/log/rclone/onedrive-mount.log
 ```

@@ -6,42 +6,57 @@ source "$ROOT/scripts/lib.sh"
 require_root
 load_config
 
-log "Installing rclone and pull-only OneDrive timer"
+log "Installing rclone OneDrive mount for local media servers"
 
-dnf_install rclone
+dnf_install rclone fuse3
 
-install -d -m 0755 "$ONEDRIVE_LOCAL_PATH" /var/log/rclone
-chown -R "$RCLONE_USER":"$RCLONE_USER" "$ONEDRIVE_LOCAL_PATH" /var/log/rclone || true
+install -d -m 0755 "$ONEDRIVE_MOUNT_PATH" "$RCLONE_CACHE_DIR" /var/log/rclone
+chown -R "$RCLONE_USER":"$RCLONE_USER" "$ONEDRIVE_MOUNT_PATH" "$RCLONE_CACHE_DIR" /var/log/rclone || true
 
-cat > /etc/systemd/system/rclone-onedrive-pull.service <<EOF
+if ! grep -q '^user_allow_other$' /etc/fuse.conf 2>/dev/null; then
+  printf '\nuser_allow_other\n' >> /etc/fuse.conf
+fi
+
+cat > /etc/systemd/system/rclone-onedrive-mount.service <<EOF
 [Unit]
-Description=Pull OneDrive DVD rips to local storage with rclone
+Description=Mount OneDrive media with bounded rclone VFS cache
 Wants=network-online.target
 After=network-online.target
 
 [Service]
-Type=oneshot
+Type=simple
 User=$RCLONE_USER
 Group=$RCLONE_USER
-ExecStart=/usr/bin/rclone sync "$RCLONE_REMOTE_NAME:$ONEDRIVE_PATH" "$ONEDRIVE_LOCAL_PATH" --create-empty-src-dirs --fast-list --transfers 2 --checkers 4 --log-file /var/log/rclone/onedrive-pull.log --log-level INFO ${RCLONE_BWLIMIT:+--bwlimit $RCLONE_BWLIMIT}
+ExecStartPre=/usr/bin/mkdir -p "$ONEDRIVE_MOUNT_PATH" "$RCLONE_CACHE_DIR"
+ExecStart=/usr/bin/rclone mount "$RCLONE_REMOTE_NAME:$ONEDRIVE_PATH" "$ONEDRIVE_MOUNT_PATH" \\
+  --config "/home/$RCLONE_USER/.config/rclone/rclone.conf" \\
+  --read-only \\
+  --allow-other \\
+  --dir-cache-time 12h \\
+  --poll-interval 1m \\
+  --vfs-cache-mode full \\
+  --vfs-cache-max-size "$RCLONE_VFS_CACHE_MAX_SIZE" \\
+  --vfs-cache-max-age "$RCLONE_VFS_CACHE_MAX_AGE" \\
+  --vfs-cache-min-free-space "$RCLONE_VFS_CACHE_MIN_FREE_SPACE" \\
+  --vfs-read-chunk-size 64M \\
+  --vfs-read-chunk-size-limit 1G \\
+  --buffer-size "$RCLONE_BUFFER_SIZE" \\
+  --cache-dir "$RCLONE_CACHE_DIR" \\
+  --transfers 2 \\
+  --checkers 4 \\
+  --log-file /var/log/rclone/onedrive-mount.log \\
+  --log-level INFO
+ExecStop=/usr/bin/fusermount3 -uz "$ONEDRIVE_MOUNT_PATH"
+Restart=on-failure
+RestartSec=15
 Nice=10
 IOSchedulingClass=best-effort
 IOSchedulingPriority=6
-EOF
-
-cat > /etc/systemd/system/rclone-onedrive-pull.timer <<EOF
-[Unit]
-Description=Schedule OneDrive pull-only sync
-
-[Timer]
-OnCalendar=$RCLONE_SCHEDULE
-Persistent=true
-RandomizedDelaySec=120
 
 [Install]
-WantedBy=timers.target
+WantedBy=multi-user.target
 EOF
 
 systemctl daemon-reload
 
-warn "Run 'rclone config' as $RCLONE_USER before enabling rclone-onedrive-pull.timer."
+warn "Run 'rclone config' as $RCLONE_USER, validate with 'rclone lsd $RCLONE_REMOTE_NAME:', then enable rclone-onedrive-mount.service."

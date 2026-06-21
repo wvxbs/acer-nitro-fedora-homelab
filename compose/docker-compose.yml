@@ -18,8 +18,26 @@ services:
       NVIDIA_DRIVER_CAPABILITIES: compute,video,utility
     volumes:
       - "${APPDATA_DIR}/plex:/config"
-      - "${MEDIA_DIR}:/media"
+      - "${MEDIA_DIR}:/media:ro,rslave"
       - "${TRANSCODE_DIR}:/transcode"
+    devices:
+      - /dev/dri:/dev/dri
+    gpus: all
+
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    container_name: jellyfin
+    profiles: ["media"]
+    network_mode: host
+    restart: unless-stopped
+    environment:
+      JELLYFIN_PublishedServerUrl: "http://jellyfin.nitro.lan"
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,video,utility
+    volumes:
+      - "${APPDATA_DIR}/jellyfin/config:/config"
+      - "${APPDATA_DIR}/jellyfin/cache:/cache"
+      - "${MEDIA_DIR}:/media:ro,rslave"
     devices:
       - /dev/dri:/dev/dri
     gpus: all

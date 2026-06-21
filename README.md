@@ -7,8 +7,8 @@ O objetivo e rodar tudo com o minimo de friccao:
 - Fedora Server com SSH, tampa fechada sem suspender e firewall basico.
 - Docker Engine + Compose.
 - Driver NVIDIA + NVIDIA Container Toolkit para Plex transcoding, upscaling e workloads CUDA.
-- Plex em container com suporte a GPU.
-- Rclone em modo pull-only: OneDrive -> HD externo, sem sincronizar mudancas locais de volta.
+- Jellyfin e Plex em containers com suporte a GPU.
+- Rclone mount read-only: OneDrive aparece como pasta local sob demanda, com cache limitado para nao lotar o SSD.
 - Acesso sem abrir portas usando Tailscale.
 - Perfil opcional de IA local com Ollama e Open WebUI.
 - Perfil opcional de DNS com AdGuard Home para bloqueio conservador de ads/trackers.
@@ -36,10 +36,10 @@ Se voce ainda nao tiver subido o repo para o GitHub, pode copiar esta pasta por 
 4. Reinicie depois da instalacao NVIDIA.
 5. Rode `./scripts/healthcheck.sh`.
 6. Configure o rclone com `rclone config`.
-7. Habilite o timer de download do OneDrive:
+7. Configure o rclone e habilite o mount sob demanda do OneDrive:
 
 ```bash
-sudo systemctl enable --now rclone-onedrive-pull.timer
+sudo systemctl enable --now rclone-onedrive-mount.service
 ```
 
 8. Suba os containers:
@@ -86,15 +86,15 @@ Por padrao:
 
 O script nao formata discos automaticamente. Ele so cria ponto de montagem via UUID se voce preencher `EXTERNAL_DISK_UUID`.
 
-## OneDrive Pull-Only
+## OneDrive Sob Demanda
 
-O rclone roda como timer systemd e executa:
+O rclone roda como servico systemd e monta o OneDrive sob demanda:
 
 ```bash
-rclone sync "$ONEDRIVE_REMOTE:$ONEDRIVE_PATH" "$ONEDRIVE_LOCAL_PATH"
+rclone mount "$RCLONE_REMOTE_NAME:$ONEDRIVE_PATH" "$ONEDRIVE_MOUNT_PATH" --read-only --vfs-cache-mode full
 ```
 
-Isso faz a maquina refletir a pasta do OneDrive. Mudancas locais nao sao enviadas para o OneDrive. Se voce apagar localmente, o proximo pull baixa de novo, desde que o arquivo ainda exista no OneDrive.
+Isso faz a biblioteca aparecer como pasta local para Jellyfin/Plex, mas os filmes so sao baixados quando lidos. O mount e read-only e o cache VFS tem limite para nao lotar o SSD.
 
 ## GPU
 
