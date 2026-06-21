@@ -29,7 +29,7 @@ User=$RCLONE_USER
 Group=$RCLONE_USER
 ExecStartPre=/usr/bin/mkdir -p "$ONEDRIVE_MOUNT_PATH" "$RCLONE_CACHE_DIR"
 ExecStart=/usr/bin/rclone mount "$RCLONE_REMOTE_NAME:$ONEDRIVE_PATH" "$ONEDRIVE_MOUNT_PATH" \\
-  --config "/home/$RCLONE_USER/.config/rclone/rclone.conf" \\
+  --config "$RCLONE_CONFIG_PATH" \\
   --read-only \\
   --allow-other \\
   --dir-cache-time 12h \\
@@ -59,4 +59,4 @@ EOF
 
 systemctl daemon-reload
 
-warn "Run 'rclone config' as $RCLONE_USER, validate with 'rclone lsd $RCLONE_REMOTE_NAME:', then enable rclone-onedrive-mount.service."
+warn "Run 'rclone config' as $RCLONE_USER, validate with 'rclone lsd $RCLONE_REMOTE_NAME:', then start the media Compose profile or enable rclone-onedrive-mount.service."

@@ -1,6 +1,34 @@
 name: nitro-homelab
 
 services:
+  rclone-jellyfin:
+    image: "${RCLONE_JELLYFIN_IMAGE:-wvxbs/rclone-jellyfin:latest}"
+    container_name: rclone-jellyfin
+    profiles: ["media"]
+    restart: unless-stopped
+    cap_add:
+      - SYS_ADMIN
+    devices:
+      - /dev/fuse:/dev/fuse
+    security_opt:
+      - apparmor:unconfined
+      - label:disable
+    environment:
+      RCLONE_REMOTE_NAME: "${RCLONE_REMOTE_NAME:-onedrive}"
+      ONEDRIVE_PATH: "${ONEDRIVE_PATH}"
+      RCLONE_MOUNT_PATH: /media/onedrive
+      RCLONE_CONFIG: /config/rclone.conf
+      RCLONE_CACHE_DIR: /cache
+      RCLONE_VFS_CACHE_MAX_SIZE: "${RCLONE_VFS_CACHE_MAX_SIZE:-40G}"
+      RCLONE_VFS_CACHE_MAX_AGE: "${RCLONE_VFS_CACHE_MAX_AGE:-12h}"
+      RCLONE_VFS_CACHE_MIN_FREE_SPACE: "${RCLONE_VFS_CACHE_MIN_FREE_SPACE:-30G}"
+      RCLONE_BUFFER_SIZE: "${RCLONE_BUFFER_SIZE:-64M}"
+      RCLONE_LOG_LEVEL: "${RCLONE_LOG_LEVEL:-INFO}"
+    volumes:
+      - "${RCLONE_CONFIG_PATH}:/config/rclone.conf:ro"
+      - "${ONEDRIVE_MOUNT_PATH}:/media/onedrive:rshared"
+      - "${RCLONE_CACHE_DIR}:/cache"
+
   plex:
     image: lscr.io/linuxserver/plex:latest
     container_name: plex
@@ -30,6 +58,8 @@ services:
     profiles: ["media"]
     network_mode: host
     restart: unless-stopped
+    depends_on:
+      - rclone-jellyfin
     environment:
       JELLYFIN_PublishedServerUrl: "http://jellyfin.nitro.lan"
       NVIDIA_VISIBLE_DEVICES: all
@@ -115,5 +145,6 @@ services:
     restart: unless-stopped
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./dashboard:/srv/dashboard:ro
       - "${APPDATA_DIR}/caddy/data:/data"
       - "${APPDATA_DIR}/caddy/config:/config"

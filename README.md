@@ -1,6 +1,6 @@
 # Acer Nitro Fedora Homelab
 
-Bootstrap para reaproveitar um Acer Nitro 5 com i5-9300H, GTX 1650, SSD de 256 GB e HD externo de 512 GB como servidor Fedora Server.
+Bootstrap para reaproveitar um Acer Nitro 5 com i5-9300H, GTX 1650 e SSD de 256 GB como servidor Fedora Server.
 
 O objetivo e rodar tudo com o minimo de friccao:
 
@@ -8,10 +8,11 @@ O objetivo e rodar tudo com o minimo de friccao:
 - Docker Engine + Compose.
 - Driver NVIDIA + NVIDIA Container Toolkit para Plex transcoding, upscaling e workloads CUDA.
 - Jellyfin e Plex em containers com suporte a GPU.
-- Rclone mount read-only: OneDrive aparece como pasta local sob demanda, com cache limitado para nao lotar o SSD.
+- Rclone mount read-only via container: OneDrive aparece como pasta local sob demanda, com cache limitado para nao lotar o SSD.
 - Acesso sem abrir portas usando Tailscale.
 - Perfil opcional de IA local com Ollama e Open WebUI.
 - Perfil opcional de DNS com AdGuard Home para bloqueio conservador de ads/trackers.
+- Painel local em `http://nitro.lan` com links e healthchecks dos servicos.
 
 ## Uso Rapido
 
@@ -36,10 +37,11 @@ Se voce ainda nao tiver subido o repo para o GitHub, pode copiar esta pasta por 
 4. Reinicie depois da instalacao NVIDIA.
 5. Rode `./scripts/healthcheck.sh`.
 6. Configure o rclone com `rclone config`.
-7. Configure o rclone e habilite o mount sob demanda do OneDrive:
+7. Configure o rclone e suba o mount sob demanda do OneDrive via Docker:
 
 ```bash
-sudo systemctl enable --now rclone-onedrive-mount.service
+cd /opt/homelab
+docker compose --profile media up -d rclone-jellyfin jellyfin
 ```
 
 8. Suba os containers:
@@ -57,6 +59,15 @@ docker compose --profile dns up -d
 ```
 
 Admin UI: `http://HOST:3001`. Leia `docs/DNS.md` antes de apontar o roteador para ele.
+
+Painel local e proxy reverso:
+
+```bash
+cd /opt/homelab
+docker compose --profile proxy up -d
+```
+
+Abra `http://nitro.lan` para ver links e healthchecks.
 
 Para IA local:
 
@@ -77,24 +88,25 @@ Opcionalmente, se o roteador de casa puder operar em modo AP/bridge, isso simpli
 
 ## Armazenamento
 
-Por padrao:
+Por padrao tudo fica no SSD interno:
 
-- SSD interno: `/srv/appdata`, `/srv/docker`, caches e bancos dos containers.
-- HD externo 5400 rpm: `/srv/storage`, midia e rips.
-- Midia final: `/srv/storage/media`.
-- Downloads/pull do OneDrive: `/srv/storage/incoming/onedrive`.
+- `/srv/appdata`: configuracoes, bancos, caches dos containers e cache VFS do rclone.
+- `/srv/storage/media`: midia local e ponto de montagem do OneDrive.
+- `/srv/storage/media/onedrive`: OneDrive montado sob demanda via rclone.
 
-O script nao formata discos automaticamente. Ele so cria ponto de montagem via UUID se voce preencher `EXTERNAL_DISK_UUID`.
+O script nao formata discos automaticamente e nao depende de disco adicional.
 
 ## OneDrive Sob Demanda
 
-O rclone roda como servico systemd e monta o OneDrive sob demanda:
+O rclone roda preferencialmente como container e monta o OneDrive sob demanda:
 
 ```bash
-rclone mount "$RCLONE_REMOTE_NAME:$ONEDRIVE_PATH" "$ONEDRIVE_MOUNT_PATH" --read-only --vfs-cache-mode full
+docker compose --profile media up -d rclone-jellyfin jellyfin
 ```
 
 Isso faz a biblioteca aparecer como pasta local para Jellyfin/Plex, mas os filmes so sao baixados quando lidos. O mount e read-only e o cache VFS tem limite para nao lotar o SSD.
+
+Imagem custom: `wvxbs/rclone-jellyfin`. Veja `docs/RCLONE_JELLYFIN_IMAGE.md`.
 
 ## GPU
 
@@ -124,7 +136,14 @@ Depois de subir o perfil `ai`:
 docker exec -it ollama ollama pull llama3.2:3b
 ```
 
-Open WebUI fica em `http://HOST:3001`.
+Open WebUI fica em `http://openwebui.nitro.lan` ou `http://HOST:3000`.
+
+Para delegar Codex e outros fluxos de IA para o Nitro, leia `docs/REMOTE_AI_DELEGATION.md`.
+
+## Estado Atual Replicavel
+
+Leia `docs/CURRENT_STATE.md` para ver o estado esperado do homelab, os servicos,
+as URLs, o desenho de rede e a checklist para recriar tudo.
 
 ## Arquivos Locais Que Nao Devem Ir Para o Git
 

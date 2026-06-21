@@ -18,6 +18,7 @@ log "Starting Fedora homelab bootstrap for $HOMELAB_HOSTNAME"
 "$ROOT/scripts/50-ssh-network.sh"
 "$ROOT/scripts/60-rclone.sh"
 "$ROOT/scripts/70-services.sh"
+"$ROOT/scripts/90-family-access.sh"
 
 if [[ "$INSTALL_AI" == "1" ]]; then
   "$ROOT/scripts/80-ai-local.sh"

@@ -12,15 +12,20 @@ docker compose --profile proxy up -d
 ## Local URLs
 
 ```text
-http://nitro.lan
+http://nitro.lan              dashboard with links and healthchecks
 http://adguard.nitro.lan
 http://cockpit.nitro.lan
 http://telemetry.nitro.lan
 http://jellyfin.nitro.lan
+http://openwebui.nitro.lan
+http://ollama.nitro.lan
 http://plex.nitro.lan
 http://portainer.nitro.lan
 http://dozzle.nitro.lan
 ```
+
+The base dashboard is intentionally simple and mobile-friendly. It is served by
+Caddy from `compose/dashboard/index.html`.
 
 ## DNS Requirement
 
@@ -46,6 +51,8 @@ adguard.nitro.lan      -> 192.168.15.8
 cockpit.nitro.lan      -> 192.168.15.8
 telemetry.nitro.lan    -> 192.168.15.8
 jellyfin.nitro.lan     -> 192.168.15.8
+openwebui.nitro.lan    -> 192.168.15.8
+ollama.nitro.lan       -> 192.168.15.8
 plex.nitro.lan         -> 192.168.15.8
 portainer.nitro.lan    -> 192.168.15.8
 dozzle.nitro.lan       -> 192.168.15.8
@@ -55,4 +62,6 @@ dozzle.nitro.lan       -> 192.168.15.8
 
 ```bash
 curl -I -H 'Host: telemetry.nitro.lan' http://192.168.15.8/
+curl -I http://nitro.lan/health/jellyfin
+curl -I http://nitro.lan/health/adguard
 ```

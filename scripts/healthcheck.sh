@@ -22,9 +22,11 @@ nvidia-smi || true
 docker run --rm --gpus all nvidia/cuda:12.5.1-base-ubuntu22.04 nvidia-smi || true
 
 log "Storage"
-df -h "$APPDATA_DIR" "$EXTERNAL_MOUNTPOINT" "$MEDIA_DIR" 2>/dev/null || df -h
+df -h "$APPDATA_DIR" "$STORAGE_ROOT" "$MEDIA_DIR" 2>/dev/null || df -h
 lsblk -o NAME,SIZE,FSTYPE,LABEL,UUID,MOUNTPOINTS || true
 
 log "Rclone"
 rclone listremotes || true
+docker ps --filter name=rclone-jellyfin --format '{{.Names}} {{.Status}}' || true
+findmnt "$ONEDRIVE_MOUNT_PATH" || true
 systemctl status rclone-onedrive-mount.service --no-pager || true

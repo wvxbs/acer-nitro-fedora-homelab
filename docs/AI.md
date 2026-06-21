@@ -34,7 +34,14 @@ docker exec -it ollama ollama pull qwen2.5:3b
 Open WebUI:
 
 ```text
+http://openwebui.nitro.lan
 http://HOST:3000
+```
+
+The base dashboard also links to it:
+
+```text
+http://nitro.lan
 ```
 
 ## Expectations
@@ -44,3 +51,15 @@ http://HOST:3000
 - Not ideal: large LLMs, high concurrency, giant context windows.
 
 If a model does not fit in VRAM, Ollama may spill to CPU and get slow.
+
+## Codex Delegation
+
+Do not run one shared Codex container for the whole family. Use separate Linux
+users on the Nitro and connect the Codex App to the Nitro over SSH. Each person
+gets their own home directory, projects, `~/.codex`, login tokens, and threads.
+
+See:
+
+```text
+docs/REMOTE_AI_DELEGATION.md
+```

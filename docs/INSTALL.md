@@ -28,14 +28,14 @@ sudo reboot
 HOMELAB_HOSTNAME=nitro-homelab
 ADMIN_USER=seu_usuario_no_fedora
 INSTALL_TAILSCALE=1
-EXTERNAL_DISK_UUID=uuid-do-hd-externo
+STORAGE_ROOT=/srv/storage
 RCLONE_REMOTE_NAME=onedrive
-ONEDRIVE_PATH=Rips/DVD
+ONEDRIVE_PATH=Vídeos/Filmes
 ONEDRIVE_MOUNT_PATH=/srv/storage/media/onedrive
 MEDIA_DIR=/srv/storage/media
 ```
 
-Find the disk UUID:
+Inspect disks if you need to confirm the internal SSD layout:
 
 ```bash
 lsblk -o NAME,SIZE,FSTYPE,LABEL,UUID,MOUNTPOINTS
@@ -61,13 +61,12 @@ Configure OneDrive as the normal Fedora user:
 ```bash
 rclone config
 rclone lsd onedrive:
-sudo systemctl enable --now rclone-onedrive-mount.service
 ```
 
-Manual one-shot run:
+Start the Docker mount and Jellyfin:
 
 ```bash
-sudo systemctl start rclone-onedrive-mount.service
-journalctl -u rclone-onedrive-mount.service -n 100 --no-pager
-tail -f /var/log/rclone/onedrive-mount.log
+cd /opt/homelab
+docker compose --profile media up -d rclone-jellyfin jellyfin
+docker logs -f rclone-jellyfin
 ```

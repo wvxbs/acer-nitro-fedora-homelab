@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nitro Homelab</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111315;
+      --panel: #1b1f23;
+      --panel-2: #22272d;
+      --text: #f3f5f7;
+      --muted: #aab2bc;
+      --line: #333a42;
+      --ok: #43d17a;
+      --bad: #ff6b6b;
+      --wait: #ffd166;
+      --accent: #7cc7ff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    main {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+      padding: 28px 18px 36px;
+    }
+
+    header {
+      display: flex;
+      gap: 14px;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 22px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 6vw, 3.2rem);
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .refresh {
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      color: var(--text);
+      min-height: 44px;
+      padding: 0 16px;
+      border-radius: 8px;
+      font-weight: 650;
+      cursor: pointer;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 12px;
+    }
+
+    a.card {
+      display: grid;
+      gap: 10px;
+      min-height: 132px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: inherit;
+      text-decoration: none;
+    }
+
+    a.card:focus,
+    a.card:hover {
+      border-color: var(--accent);
+      outline: none;
+    }
+
+    .topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .name {
+      font-size: 1.1rem;
+      font-weight: 760;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--muted);
+      font-size: .92rem;
+      white-space: nowrap;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--wait);
+    }
+
+    .online .dot {
+      background: var(--ok);
+    }
+
+    .offline .dot {
+      background: var(--bad);
+    }
+
+    .desc {
+      color: var(--muted);
+      line-height: 1.35;
+      min-height: 38px;
+    }
+
+    .url {
+      color: var(--accent);
+      overflow-wrap: anywhere;
+      font-size: .93rem;
+    }
+
+    footer {
+      color: var(--muted);
+      margin-top: 20px;
+      font-size: .92rem;
+    }
+
+    @media (max-width: 620px) {
+      header {
+        display: block;
+      }
+
+      .refresh {
+        width: 100%;
+        margin-top: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>Nitro Homelab</h1>
+        <p class="subtitle">Links e status dos servicos locais.</p>
+      </div>
+      <button class="refresh" id="refresh" type="button">Atualizar status</button>
+    </header>
+
+    <section class="grid" id="services"></section>
+
+    <footer>
+      DNS local: 192.168.15.8. Acesse este painel em http://nitro.lan.
+    </footer>
+  </main>
+
+  <script>
+    const services = [
+      {
+        name: "Cockpit",
+        url: "http://cockpit.nitro.lan",
+        health: "/health/cockpit",
+        desc: "Painel do Fedora Server."
+      },
+      {
+        name: "AdGuard Home",
+        url: "http://adguard.nitro.lan",
+        health: "/health/adguard",
+        desc: "DNS e bloqueio de anuncios."
+      },
+      {
+        name: "Telemetry Lab",
+        url: "http://telemetry.nitro.lan",
+        health: "/health/telemetry",
+        desc: "Projeto de teste em Streamlit."
+      },
+      {
+        name: "Jellyfin",
+        url: "http://jellyfin.nitro.lan",
+        health: "/health/jellyfin",
+        desc: "Midia via OneDrive sob demanda."
+      },
+      {
+        name: "Open WebUI",
+        url: "http://openwebui.nitro.lan",
+        health: "/health/openwebui",
+        desc: "Chat local para modelos do Nitro."
+      },
+      {
+        name: "Ollama API",
+        url: "http://ollama.nitro.lan",
+        health: "/health/ollama",
+        desc: "Runtime de modelos locais."
+      },
+      {
+        name: "Plex",
+        url: "http://plex.nitro.lan",
+        health: "/health/plex",
+        desc: "Servidor Plex opcional."
+      },
+      {
+        name: "Portainer",
+        url: "http://portainer.nitro.lan",
+        health: "/health/portainer",
+        desc: "Administracao visual do Docker."
+      },
+      {
+        name: "Dozzle",
+        url: "http://dozzle.nitro.lan",
+        health: "/health/dozzle",
+        desc: "Logs dos containers."
+      }
+    ];
+
+    const grid = document.getElementById("services");
+
+    function render() {
+      grid.innerHTML = services.map((service, index) => `
+        <a class="card pending" href="${service.url}" data-index="${index}">
+          <div class="topline">
+            <span class="name">${service.name}</span>
+            <span class="status"><span class="dot"></span><span class="label">testando</span></span>
+          </div>
+          <div class="desc">${service.desc}</div>
+          <div class="url">${service.url}</div>
+        </a>
+      `).join("");
+    }
+
+    async function check(service, card) {
+      const label = card.querySelector(".label");
+      card.classList.remove("online", "offline");
+      label.textContent = "testando";
+
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 4500);
+
+      try {
+        const response = await fetch(service.health, {
+          cache: "no-store",
+          signal: controller.signal
+        });
+        if (!response.ok) throw new Error(String(response.status));
+        card.classList.add("online");
+        label.textContent = "online";
+      } catch (error) {
+        card.classList.add("offline");
+        label.textContent = "offline";
+      } finally {
+        clearTimeout(timeout);
+      }
+    }
+
+    function refresh() {
+      document.querySelectorAll(".card").forEach((card) => {
+        check(services[Number(card.dataset.index)], card);
+      });
+    }
+
+    document.getElementById("refresh").addEventListener("click", refresh);
+    render();
+    refresh();
+  </script>
+</body>
+</html>

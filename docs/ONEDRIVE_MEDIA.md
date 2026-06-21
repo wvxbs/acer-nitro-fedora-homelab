@@ -27,7 +27,7 @@ https://1drv.ms/f/c/dca378c12445f4d0/IgDQ9EUkwXijIIDcJl8AAAAAAd18A9mGT-1GBkgtZVp
 ## Paths
 
 ```text
-Remote path:          onedrive:Rips/DVD
+Remote path:          onedrive:Vídeos/Filmes
 Host mountpoint:      /srv/storage/media/onedrive
 Jellyfin media path:  /media/onedrive
 VFS cache directory:  /srv/appdata/rclone/vfs-cache
@@ -43,10 +43,18 @@ Run as the Fedora user:
 ```bash
 rclone config
 rclone lsd onedrive:
-rclone lsf onedrive:Rips/DVD
+rclone lsf onedrive:Vídeos/Filmes
 ```
 
-Then enable the mount:
+Then start the Docker media profile:
+
+```bash
+cd /opt/homelab
+docker compose --profile media up -d rclone-jellyfin jellyfin
+```
+
+Legacy systemd mount, only if you intentionally choose not to use Docker for the
+mount:
 
 ```bash
 sudo systemctl enable --now rclone-onedrive-mount.service
@@ -71,6 +79,13 @@ Add a library with folder:
 
 ```text
 /media/onedrive
+```
+
+Only the configured OneDrive folder is mounted. For this homelab that is the
+`Vídeos/Filmes` folder inside the authenticated OneDrive account.
+
+```text
+OneDrive/Vídeos/Filmes
 ```
 
 ## Cache Defaults

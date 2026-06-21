@@ -1,0 +1,7 @@
+.git
+.github
+*.log
+*.env
+rclone.conf
+config/
+runtime/

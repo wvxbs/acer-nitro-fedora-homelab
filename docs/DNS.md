@@ -50,6 +50,36 @@ Only after testing, set the router DHCP DNS server to:
 
 Do not make AdGuard Home the DHCP server unless you intentionally want to replace the router DHCP.
 
+Current intended layout:
+
+```text
+Office/Vivo LAN: 192.168.15.0/24
+Nitro service IP: 192.168.15.8
+Home/Loft router WAN: 192.168.15.5
+Home/Loft LAN: 192.168.0.0/24
+Router DHCP DNS on both networks: 192.168.15.8
+```
+
+The Nitro keeps `192.168.15.8/24` on the wired connection so DNS continues to
+work even if Wi-Fi changes. Keep AdGuard bound to `192.168.15.8:53`.
+
+## Local Names
+
+Create these DNS rewrites in AdGuard Home, all pointing to `192.168.15.8`:
+
+```text
+nitro.lan
+adguard.nitro.lan
+cockpit.nitro.lan
+telemetry.nitro.lan
+jellyfin.nitro.lan
+openwebui.nitro.lan
+ollama.nitro.lan
+plex.nitro.lan
+portainer.nitro.lan
+dozzle.nitro.lan
+```
+
 ## If Something Breaks
 
 - Open the AdGuard Home query log.

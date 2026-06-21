@@ -4,7 +4,66 @@
 }
 
 http://nitro.lan {
-  respond "nitro-homelab reverse proxy online" 200
+  root * /srv/dashboard
+
+  handle /health/caddy {
+    respond "ok" 200
+  }
+
+  handle_path /health/cockpit {
+    reverse_proxy https://127.0.0.1:9090 {
+      transport http {
+        tls_insecure_skip_verify
+      }
+    }
+  }
+
+  handle_path /health/adguard {
+    rewrite * /login.html
+    reverse_proxy http://127.0.0.1:3001 {
+      header_up Host adguard.nitro.lan
+    }
+  }
+
+  handle_path /health/telemetry {
+    rewrite * /_stcore/health
+    reverse_proxy http://127.0.0.1:8501
+  }
+
+  handle_path /health/jellyfin {
+    rewrite * /System/Info/Public
+    reverse_proxy http://127.0.0.1:8096
+  }
+
+  handle_path /health/openwebui {
+    rewrite * /health
+    reverse_proxy http://127.0.0.1:3000
+  }
+
+  handle_path /health/ollama {
+    rewrite * /api/tags
+    reverse_proxy http://127.0.0.1:11434
+  }
+
+  handle_path /health/plex {
+    rewrite * /identity
+    reverse_proxy http://127.0.0.1:32400
+  }
+
+  handle_path /health/portainer {
+    rewrite * /api/status
+    reverse_proxy https://127.0.0.1:9443 {
+      transport http {
+        tls_insecure_skip_verify
+      }
+    }
+  }
+
+  handle_path /health/dozzle {
+    reverse_proxy http://127.0.0.1:9999
+  }
+
+  file_server
 }
 
 http://cockpit.nitro.lan {
@@ -26,6 +85,15 @@ http://telemetry.nitro.lan {
 http://jellyfin.nitro.lan {
   reverse_proxy http://127.0.0.1:8096
 }
+
+http://openwebui.nitro.lan {
+  reverse_proxy http://127.0.0.1:3000
+}
+
+http://ollama.nitro.lan {
+  reverse_proxy http://127.0.0.1:11434
+}
+
 http://plex.nitro.lan {
   reverse_proxy http://127.0.0.1:32400
 }

@@ -26,7 +26,7 @@ EOF
 systemctl restart systemd-logind || true
 
 log "Creating service directories"
-install -d -m 0755 "$APPDATA_DIR" "$EXTERNAL_MOUNTPOINT" "$MEDIA_DIR" "$TRANSCODE_DIR" "$HOMELAB_ROOT"
+install -d -m 0755 "$APPDATA_DIR" "$STORAGE_ROOT" "$MEDIA_DIR" "$TRANSCODE_DIR" "$HOMELAB_ROOT"
 chown -R "$ADMIN_USER":"$ADMIN_USER" "$APPDATA_DIR" "$HOMELAB_ROOT" || true
 
 log "Enabling useful services"
