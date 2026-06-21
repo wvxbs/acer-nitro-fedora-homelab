@@ -1,21 +1,62 @@
 {
-  auto_https off
   admin off
 }
 
+(local_tls) {
+  tls internal
+}
+
+(cockpit_proxy) {
+  reverse_proxy https://127.0.0.1:9090 {
+    header_up Host cockpit.nitro.lan
+    header_up X-Forwarded-Proto https
+    header_up X-Forwarded-For {remote_host}
+    transport http {
+      tls_insecure_skip_verify
+    }
+  }
+}
+
 http://nitro.lan {
+  handle /ca/root.crt {
+    root * /data/caddy/pki/authorities/local
+    rewrite * /root.crt
+    file_server
+  }
+
+  redir https://nitro.lan{uri} 308
+}
+
+http://adguard.nitro.lan,
+http://cockpit.nitro.lan,
+http://telemetry.nitro.lan,
+http://jellyfin.nitro.lan,
+http://openwebui.nitro.lan,
+http://ollama.nitro.lan,
+http://plex.nitro.lan,
+http://portainer.nitro.lan,
+http://dozzle.nitro.lan,
+http://glances.nitro.lan,
+http://gpu.nitro.lan {
+  redir https://{host}{uri} 308
+}
+
+https://nitro.lan {
+  import local_tls
   root * /srv/dashboard
+
+  handle /ca/root.crt {
+    root * /data/caddy/pki/authorities/local
+    rewrite * /root.crt
+    file_server
+  }
 
   handle /health/caddy {
     respond "ok" 200
   }
 
   handle_path /health/cockpit {
-    reverse_proxy https://127.0.0.1:9090 {
-      transport http {
-        tls_insecure_skip_verify
-      }
-    }
+    import cockpit_proxy
   }
 
   handle_path /health/adguard {
@@ -63,42 +104,54 @@ http://nitro.lan {
     reverse_proxy http://127.0.0.1:9999
   }
 
+  handle_path /health/glances {
+    reverse_proxy http://127.0.0.1:61208
+  }
+
+  handle_path /health/gpu {
+    reverse_proxy http://127.0.0.1:9836
+  }
+
   file_server
 }
 
-http://cockpit.nitro.lan {
-  reverse_proxy https://127.0.0.1:9090 {
-    transport http {
-      tls_insecure_skip_verify
-    }
-  }
+https://cockpit.nitro.lan {
+  import local_tls
+  import cockpit_proxy
 }
 
-http://adguard.nitro.lan {
+https://adguard.nitro.lan {
+  import local_tls
   reverse_proxy http://127.0.0.1:3001
 }
 
-http://telemetry.nitro.lan {
+https://telemetry.nitro.lan {
+  import local_tls
   reverse_proxy http://127.0.0.1:8501
 }
 
-http://jellyfin.nitro.lan {
+https://jellyfin.nitro.lan {
+  import local_tls
   reverse_proxy http://127.0.0.1:8096
 }
 
-http://openwebui.nitro.lan {
+https://openwebui.nitro.lan {
+  import local_tls
   reverse_proxy http://127.0.0.1:3000
 }
 
-http://ollama.nitro.lan {
+https://ollama.nitro.lan {
+  import local_tls
   reverse_proxy http://127.0.0.1:11434
 }
 
-http://plex.nitro.lan {
+https://plex.nitro.lan {
+  import local_tls
   reverse_proxy http://127.0.0.1:32400
 }
 
-http://portainer.nitro.lan {
+https://portainer.nitro.lan {
+  import local_tls
   reverse_proxy https://127.0.0.1:9443 {
     transport http {
       tls_insecure_skip_verify
@@ -106,6 +159,17 @@ http://portainer.nitro.lan {
   }
 }
 
-http://dozzle.nitro.lan {
+https://dozzle.nitro.lan {
+  import local_tls
   reverse_proxy http://127.0.0.1:9999
+}
+
+https://glances.nitro.lan {
+  import local_tls
+  reverse_proxy http://127.0.0.1:61208
+}
+
+https://gpu.nitro.lan {
+  import local_tls
+  reverse_proxy http://127.0.0.1:9836
 }

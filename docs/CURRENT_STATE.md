@@ -19,16 +19,18 @@ server if Ethernet is available.
 ## Core Services
 
 ```text
-AdGuard Home   DNS on 192.168.15.8:53, UI on http://adguard.nitro.lan
-Caddy          reverse proxy and dashboard on http://nitro.lan
-Cockpit        http://cockpit.nitro.lan
-Jellyfin       http://jellyfin.nitro.lan
-Telemetry Lab  http://telemetry.nitro.lan
-Ollama         http://ollama.nitro.lan
-Open WebUI     http://openwebui.nitro.lan
-Plex           http://plex.nitro.lan
-Portainer      http://portainer.nitro.lan
-Dozzle         http://dozzle.nitro.lan
+AdGuard Home   DNS on 192.168.15.8:53, UI on https://adguard.nitro.lan
+Caddy          reverse proxy and dashboard on https://nitro.lan
+Cockpit        https://cockpit.nitro.lan
+Jellyfin       https://jellyfin.nitro.lan
+Telemetry Lab  https://telemetry.nitro.lan
+Ollama         https://ollama.nitro.lan
+Open WebUI     https://openwebui.nitro.lan
+Plex           https://plex.nitro.lan
+Portainer      https://portainer.nitro.lan
+Dozzle         https://dozzle.nitro.lan
+Glances        https://glances.nitro.lan
+Nitro GPU      https://gpu.nitro.lan
 ```
 
 Some optional services may be offline until their Compose profile is started.
@@ -44,6 +46,7 @@ Jellyfin path: /media/onedrive
 Mount mode: read-only
 VFS cache: /srv/appdata/rclone/vfs-cache
 Mount container: wvxbs/rclone-jellyfin
+Cache policy: bounded VFS cache, dynamic reads from OneDrive
 ```
 
 ## Family Access

@@ -12,7 +12,8 @@ O objetivo e rodar tudo com o minimo de friccao:
 - Acesso sem abrir portas usando Tailscale.
 - Perfil opcional de IA local com Ollama e Open WebUI.
 - Perfil opcional de DNS com AdGuard Home para bloqueio conservador de ads/trackers.
-- Painel local em `http://nitro.lan` com links e healthchecks dos servicos.
+- Painel local em `https://nitro.lan` com links e healthchecks dos servicos.
+- Monitoramento web com Glances e painel simples da GTX 1650 via `nvidia-smi`.
 
 ## Uso Rapido
 
@@ -67,7 +68,17 @@ cd /opt/homelab
 docker compose --profile proxy up -d
 ```
 
-Abra `http://nitro.lan` para ver links e healthchecks.
+Abra `https://nitro.lan` para ver links e healthchecks.
+
+Para monitoramento rapido:
+
+```bash
+cd /opt/homelab
+docker compose --profile ops up -d glances nvidia-web
+```
+
+Use `https://glances.nitro.lan` para CPU/RAM/disco/Docker e
+`https://gpu.nitro.lan` para a GTX 1650.
 
 Para IA local:
 
@@ -136,7 +147,7 @@ Depois de subir o perfil `ai`:
 docker exec -it ollama ollama pull llama3.2:3b
 ```
 
-Open WebUI fica em `http://openwebui.nitro.lan` ou `http://HOST:3000`.
+Open WebUI fica em `https://openwebui.nitro.lan` ou `http://HOST:3000`.
 
 Para delegar Codex e outros fluxos de IA para o Nitro, leia `docs/REMOTE_AI_DELEGATION.md`.
 

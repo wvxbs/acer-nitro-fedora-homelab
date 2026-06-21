@@ -1,6 +1,7 @@
 # Reverse Proxy
 
-Caddy exposes friendly LAN names for homelab services. The proxy listens on plain HTTP port `80`; TLS is intentionally disabled for local-only access.
+Caddy exposes friendly LAN names for homelab services. The proxy redirects local
+HTTP names to HTTPS and uses an internal Caddy certificate authority for LAN TLS.
 
 ## Start
 
@@ -12,20 +13,36 @@ docker compose --profile proxy up -d
 ## Local URLs
 
 ```text
-http://nitro.lan              dashboard with links and healthchecks
-http://adguard.nitro.lan
-http://cockpit.nitro.lan
-http://telemetry.nitro.lan
-http://jellyfin.nitro.lan
-http://openwebui.nitro.lan
-http://ollama.nitro.lan
-http://plex.nitro.lan
-http://portainer.nitro.lan
-http://dozzle.nitro.lan
+https://nitro.lan             dashboard with links and healthchecks
+https://adguard.nitro.lan
+https://cockpit.nitro.lan
+https://telemetry.nitro.lan
+https://jellyfin.nitro.lan
+https://openwebui.nitro.lan
+https://ollama.nitro.lan
+https://plex.nitro.lan
+https://portainer.nitro.lan
+https://dozzle.nitro.lan
+https://glances.nitro.lan
+https://gpu.nitro.lan
 ```
 
 The base dashboard is intentionally simple and mobile-friendly. It is served by
 Caddy from `compose/dashboard/index.html`.
+
+## Local Certificate Authority
+
+Browsers will show a certificate warning until the local Caddy root certificate
+is trusted on each client device. Download it from the LAN:
+
+```text
+http://nitro.lan/ca/root.crt
+https://nitro.lan/ca/root.crt
+```
+
+Install `root.crt` as a trusted root certificate on Windows, Android, iOS and
+macOS devices that should access `https://*.nitro.lan` without warnings. This is
+only for the private LAN names; it is not a public internet certificate.
 
 ## DNS Requirement
 
@@ -56,12 +73,16 @@ ollama.nitro.lan       -> 192.168.15.8
 plex.nitro.lan         -> 192.168.15.8
 portainer.nitro.lan    -> 192.168.15.8
 dozzle.nitro.lan       -> 192.168.15.8
+glances.nitro.lan      -> 192.168.15.8
+gpu.nitro.lan          -> 192.168.15.8
 ```
 
 ## Validation
 
 ```bash
-curl -I -H 'Host: telemetry.nitro.lan' http://192.168.15.8/
-curl -I http://nitro.lan/health/jellyfin
-curl -I http://nitro.lan/health/adguard
+curl -k -I https://nitro.lan/
+curl -k -I https://nitro.lan/health/jellyfin
+curl -k -I https://nitro.lan/health/adguard
+curl -k -I https://glances.nitro.lan/
+curl -k -I https://gpu.nitro.lan/
 ```

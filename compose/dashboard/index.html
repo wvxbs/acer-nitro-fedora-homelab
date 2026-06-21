@@ -143,6 +143,20 @@
       font-size: .93rem;
     }
 
+    .notice {
+      margin: 0 0 16px;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .notice a {
+      color: var(--accent);
+    }
+
     footer {
       color: var(--muted);
       margin-top: 20px;
@@ -171,10 +185,15 @@
       <button class="refresh" id="refresh" type="button">Atualizar status</button>
     </header>
 
+    <p class="notice">
+      Para remover avisos de certificado, instale a CA local:
+      <a href="http://nitro.lan/ca/root.crt">baixar root.crt</a>.
+    </p>
+
     <section class="grid" id="services"></section>
 
     <footer>
-      DNS local: 192.168.15.8. Acesse este painel em http://nitro.lan.
+      DNS local: 192.168.15.8. Acesse este painel em https://nitro.lan.
     </footer>
   </main>
 
@@ -182,55 +201,67 @@
     const services = [
       {
         name: "Cockpit",
-        url: "http://cockpit.nitro.lan",
+        url: "https://cockpit.nitro.lan",
         health: "/health/cockpit",
         desc: "Painel do Fedora Server."
       },
       {
         name: "AdGuard Home",
-        url: "http://adguard.nitro.lan",
+        url: "https://adguard.nitro.lan",
         health: "/health/adguard",
         desc: "DNS e bloqueio de anuncios."
       },
       {
         name: "Telemetry Lab",
-        url: "http://telemetry.nitro.lan",
+        url: "https://telemetry.nitro.lan",
         health: "/health/telemetry",
         desc: "Projeto de teste em Streamlit."
       },
       {
         name: "Jellyfin",
-        url: "http://jellyfin.nitro.lan",
+        url: "https://jellyfin.nitro.lan",
         health: "/health/jellyfin",
         desc: "Midia via OneDrive sob demanda."
       },
       {
+        name: "Glances",
+        url: "https://glances.nitro.lan",
+        health: "/health/glances",
+        desc: "Monitoramento estilo btop pela web."
+      },
+      {
+        name: "Nitro GPU",
+        url: "https://gpu.nitro.lan",
+        health: "/health/gpu",
+        desc: "GTX 1650, VRAM, temperatura e energia via nvidia-smi."
+      },
+      {
         name: "Open WebUI",
-        url: "http://openwebui.nitro.lan",
+        url: "https://openwebui.nitro.lan",
         health: "/health/openwebui",
         desc: "Chat local para modelos do Nitro."
       },
       {
         name: "Ollama API",
-        url: "http://ollama.nitro.lan",
+        url: "https://ollama.nitro.lan",
         health: "/health/ollama",
         desc: "Runtime de modelos locais."
       },
       {
         name: "Plex",
-        url: "http://plex.nitro.lan",
+        url: "https://plex.nitro.lan",
         health: "/health/plex",
         desc: "Servidor Plex opcional."
       },
       {
         name: "Portainer",
-        url: "http://portainer.nitro.lan",
+        url: "https://portainer.nitro.lan",
         health: "/health/portainer",
         desc: "Administracao visual do Docker."
       },
       {
         name: "Dozzle",
-        url: "http://dozzle.nitro.lan",
+        url: "https://dozzle.nitro.lan",
         health: "/health/dozzle",
         desc: "Logs dos containers."
       }

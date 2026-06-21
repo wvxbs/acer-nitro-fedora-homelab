@@ -93,6 +93,38 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
+  glances:
+    image: nicolargo/glances:latest-full
+    container_name: glances
+    profiles: ["ops"]
+    restart: unless-stopped
+    pid: host
+    ports:
+      - "61208:61208"
+    environment:
+      GLANCES_OPT: "-w"
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /etc/os-release:/etc/os-release:ro
+    gpus: all
+
+  nvidia-web:
+    image: python:3.12-slim
+    container_name: nvidia-web
+    profiles: ["ops"]
+    restart: unless-stopped
+    ports:
+      - "9836:9836"
+    environment:
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+    volumes:
+      - ./monitoring/nvidia-web.py:/app/nvidia-web.py:ro
+    command: python /app/nvidia-web.py
+    gpus: all
+
   ollama:
     image: ollama/ollama:latest
     container_name: ollama
