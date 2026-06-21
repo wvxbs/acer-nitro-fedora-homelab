@@ -8,7 +8,11 @@ load_config
 
 log "Installing Docker Engine"
 
-dnf config-manager addrepo --from-repofile=https://download.docker.com/linux/fedora/docker-ce.repo
+if [[ ! -f /etc/yum.repos.d/docker-ce.repo ]]; then
+  dnf config-manager addrepo --from-repofile=https://download.docker.com/linux/fedora/docker-ce.repo
+else
+  log "Docker repo already configured"
+fi
 dnf_install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
 install -d -m 0755 /etc/docker
