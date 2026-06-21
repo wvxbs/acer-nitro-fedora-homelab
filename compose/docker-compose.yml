@@ -74,3 +74,15 @@ services:
     volumes:
       - "${APPDATA_DIR}/open-webui:/app/backend/data"
 
+  adguard-home:
+    image: adguard/adguardhome:latest
+    container_name: adguard-home
+    profiles: ["dns"]
+    restart: unless-stopped
+    ports:
+      - "${DNS_BIND_IP:-0.0.0.0}:53:53/tcp"
+      - "${DNS_BIND_IP:-0.0.0.0}:53:53/udp"
+      - "${DNS_ADMIN_PORT:-3000}:3000/tcp"
+    volumes:
+      - "${APPDATA_DIR}/adguard/work:/opt/adguardhome/work"
+      - "${APPDATA_DIR}/adguard/conf:/opt/adguardhome/conf"

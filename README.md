@@ -11,6 +11,7 @@ O objetivo e rodar tudo com o minimo de friccao:
 - Rclone em modo pull-only: OneDrive -> HD externo, sem sincronizar mudancas locais de volta.
 - Acesso sem abrir portas usando Tailscale.
 - Perfil opcional de IA local com Ollama e Open WebUI.
+- Perfil opcional de DNS com AdGuard Home para bloqueio conservador de ads/trackers.
 
 ## Uso Rapido
 
@@ -47,6 +48,15 @@ sudo systemctl enable --now rclone-onedrive-pull.timer
 cd /opt/homelab
 docker compose --profile media up -d
 ```
+
+Para DNS com AdGuard Home:
+
+```bash
+cd /opt/homelab
+docker compose --profile dns up -d
+```
+
+Admin UI: `http://HOST:3001`. Leia `docs/DNS.md` antes de apontar o roteador para ele.
 
 Para IA local:
 
@@ -114,7 +124,7 @@ Depois de subir o perfil `ai`:
 docker exec -it ollama ollama pull llama3.2:3b
 ```
 
-Open WebUI fica em `http://HOST:3000`.
+Open WebUI fica em `http://HOST:3001`.
 
 ## Arquivos Locais Que Nao Devem Ir Para o Git
 

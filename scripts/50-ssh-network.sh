@@ -13,8 +13,10 @@ enable_now sshd.service firewalld.service avahi-daemon.service
 
 firewall-cmd --permanent --add-service=ssh
 firewall-cmd --permanent --add-service=mdns
+firewall-cmd --permanent --add-service=dns
 firewall-cmd --permanent --add-port=32400/tcp
 firewall-cmd --permanent --add-port=3000/tcp
+firewall-cmd --permanent --add-port=3001/tcp
 firewall-cmd --permanent --add-port=9443/tcp
 firewall-cmd --permanent --add-port=9999/tcp
 firewall-cmd --permanent --add-port=11434/tcp
