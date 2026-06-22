@@ -10,6 +10,7 @@ Primary service IP: 192.168.15.8
 Secondary observed Ethernet IP: 192.168.15.6
 OS: Fedora Server
 GPU: NVIDIA GTX 1650, 4 GB VRAM
+Root LV: /dev/fedora/root expanded to 180 GB
 ```
 
 The service IP `192.168.15.8/24` should stay on the wired NetworkManager
@@ -26,15 +27,13 @@ Jellyfin       https://jellyfin.nitro.lan
 Telemetry Lab  https://telemetry.nitro.lan
 Ollama         https://ollama.nitro.lan
 Open WebUI     https://openwebui.nitro.lan
-Plex           https://plex.nitro.lan
 Portainer      https://portainer.nitro.lan
 Dozzle         https://dozzle.nitro.lan
 Glances        https://glances.nitro.lan
 Nitro GPU      https://gpu.nitro.lan
 ```
 
-Some optional services may be offline until their Compose profile is started.
-The dashboard keeps the link visible and marks the healthcheck offline.
+Ollama and Open WebUI are part of the AI profile. The dashboard keeps optional links visible and marks their healthcheck offline when a profile is stopped.
 
 ## OneDrive Media
 

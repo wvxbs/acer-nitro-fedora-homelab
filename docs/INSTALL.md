@@ -41,6 +41,24 @@ Inspect disks if you need to confirm the internal SSD layout:
 lsblk -o NAME,SIZE,FSTYPE,LABEL,UUID,MOUNTPOINTS
 ```
 
+## LVM Root Size
+
+Fedora may create a small 15 GB root logical volume even when the SSD has much more free LVM space. Docker images, Open WebUI and local models need more room. Check with:
+
+```bash
+df -h /
+sudo vgs
+sudo lvs
+```
+
+If the volume group has free space, grow root online:
+
+```bash
+sudo lvextend -r -L 180G /dev/fedora/root
+```
+
+This repo assumes the Nitro root LV has enough space for containers and caches.
+
 ## First Container Start
 
 ```bash
@@ -48,11 +66,10 @@ cd /opt/homelab
 docker compose --profile media --profile ops up -d
 ```
 
-Plex uses host networking:
+Jellyfin uses host networking:
 
-- Web UI: `http://HOST:32400/web`
-- Media path inside Plex: `/media`
-- Transcode path inside Plex: `/transcode`
+- Web UI: `https://jellyfin.nitro.lan`
+- Media path inside Jellyfin: `/media/onedrive`
 
 ## Rclone Mount
 

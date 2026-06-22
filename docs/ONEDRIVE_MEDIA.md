@@ -1,6 +1,6 @@
 # OneDrive Media Server
 
-Use Jellyfin plus `rclone mount` as the default media stack. Jellyfin is local-first and does not require a Plex account. Rclone presents OneDrive as a read-only filesystem and only downloads movie data when a client actually reads it.
+Use Jellyfin plus `rclone mount` as the media stack. Jellyfin is local-first and avoids a Plex account. Rclone presents OneDrive as a read-only filesystem and only downloads movie data when a client actually reads it.
 
 ## Recommendation
 
@@ -12,7 +12,7 @@ OneDrive -> rclone mount -> /srv/storage/media/onedrive -> Jellyfin -> TV/browse
 
 This avoids filling the 256 GB SSD. The SSD only stores Jellyfin metadata and a bounded rclone VFS cache.
 
-Plex can still be run, but Jellyfin is the lower-friction local option for this homelab.
+Plex was intentionally removed from this homelab. Jellyfin is the single media server.
 
 ## Shared Link Caveat
 

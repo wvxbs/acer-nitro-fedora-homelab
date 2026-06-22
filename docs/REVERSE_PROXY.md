@@ -20,7 +20,6 @@ https://telemetry.nitro.lan
 https://jellyfin.nitro.lan
 https://openwebui.nitro.lan
 https://ollama.nitro.lan
-https://plex.nitro.lan
 https://portainer.nitro.lan
 https://dozzle.nitro.lan
 https://glances.nitro.lan
@@ -70,7 +69,6 @@ telemetry.nitro.lan    -> 192.168.15.8
 jellyfin.nitro.lan     -> 192.168.15.8
 openwebui.nitro.lan    -> 192.168.15.8
 ollama.nitro.lan       -> 192.168.15.8
-plex.nitro.lan         -> 192.168.15.8
 portainer.nitro.lan    -> 192.168.15.8
 dozzle.nitro.lan       -> 192.168.15.8
 glances.nitro.lan      -> 192.168.15.8

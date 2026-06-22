@@ -29,29 +29,6 @@ services:
       - "${ONEDRIVE_MOUNT_PATH}:/media/onedrive:rshared"
       - "${RCLONE_CACHE_DIR}:/cache"
 
-  plex:
-    image: lscr.io/linuxserver/plex:latest
-    container_name: plex
-    profiles: ["media"]
-    network_mode: host
-    restart: unless-stopped
-    environment:
-      PUID: "${PUID}"
-      PGID: "${PGID}"
-      TZ: "${TZ}"
-      VERSION: docker
-      PLEX_CLAIM: "${PLEX_CLAIM}"
-      ADVERTISE_IP: "${PLEX_ADVERTISE_IP}"
-      NVIDIA_VISIBLE_DEVICES: all
-      NVIDIA_DRIVER_CAPABILITIES: compute,video,utility
-    volumes:
-      - "${APPDATA_DIR}/plex:/config"
-      - "${MEDIA_DIR}:/media:ro,rslave"
-      - "${TRANSCODE_DIR}:/transcode"
-    devices:
-      - /dev/dri:/dev/dri
-    gpus: all
-
   jellyfin:
     image: jellyfin/jellyfin:latest
     container_name: jellyfin
@@ -61,7 +38,7 @@ services:
     depends_on:
       - rclone-jellyfin
     environment:
-      JELLYFIN_PublishedServerUrl: "http://jellyfin.nitro.lan"
+      JELLYFIN_PublishedServerUrl: "https://jellyfin.nitro.lan"
       NVIDIA_VISIBLE_DEVICES: all
       NVIDIA_DRIVER_CAPABILITIES: compute,video,utility
     volumes:

@@ -59,15 +59,13 @@ load_config() {
   HOMELAB_ROOT="${HOMELAB_ROOT:-/opt/homelab}"
   APPDATA_DIR="${APPDATA_DIR:-/srv/appdata}"
   MEDIA_DIR="${MEDIA_DIR:-$STORAGE_ROOT/media}"
-  TRANSCODE_DIR="${TRANSCODE_DIR:-/srv/appdata/plex/transcode}"
   PUID="${PUID:-1000}"
   PGID="${PGID:-1000}"
   TZ="${TZ:-America/Sao_Paulo}"
-  PLEX_CLAIM="${PLEX_CLAIM:-}"
-  PLEX_ADVERTISE_IP="${PLEX_ADVERTISE_IP:-}"
   INSTALL_AI="${INSTALL_AI:-0}"
   OLLAMA_MODELS_DIR="${OLLAMA_MODELS_DIR:-/srv/appdata/ollama}"
   FAMILY_USER="${FAMILY_USER:-familia}"
+  CODEX_USERS="${CODEX_USERS:-}"
 }
 
 dnf_install() {

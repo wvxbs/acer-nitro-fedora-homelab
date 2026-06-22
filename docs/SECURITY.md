@@ -23,4 +23,3 @@ Never commit:
 - `rclone/rclone.conf`
 - Tailscale auth keys
 - SSH private keys
-- Plex claim tokens

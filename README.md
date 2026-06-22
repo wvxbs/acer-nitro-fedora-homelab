@@ -6,11 +6,12 @@ O objetivo e rodar tudo com o minimo de friccao:
 
 - Fedora Server com SSH, tampa fechada sem suspender e firewall basico.
 - Docker Engine + Compose.
-- Driver NVIDIA + NVIDIA Container Toolkit para Plex transcoding, upscaling e workloads CUDA.
-- Jellyfin e Plex em containers com suporte a GPU.
+- Driver NVIDIA + NVIDIA Container Toolkit para Jellyfin, Ollama e workloads CUDA.
+- Jellyfin em container com suporte a GPU.
 - Rclone mount read-only via container: OneDrive aparece como pasta local sob demanda, com cache limitado para nao lotar o SSD.
 - Acesso sem abrir portas usando Tailscale.
 - Perfil opcional de IA local com Ollama e Open WebUI.
+- Delegacao de Codex por SSH remoto, com usuarios Linux separados por pessoa.
 - Perfil opcional de DNS com AdGuard Home para bloqueio conservador de ads/trackers.
 - Painel local em `https://nitro.lan` com links e healthchecks dos servicos.
 - Monitoramento web com Glances e painel simples da GTX 1650 via `nvidia-smi`.
@@ -115,7 +116,7 @@ O rclone roda preferencialmente como container e monta o OneDrive sob demanda:
 docker compose --profile media up -d rclone-jellyfin jellyfin
 ```
 
-Isso faz a biblioteca aparecer como pasta local para Jellyfin/Plex, mas os filmes so sao baixados quando lidos. O mount e read-only e o cache VFS tem limite para nao lotar o SSD.
+Isso faz a biblioteca aparecer como pasta local para o Jellyfin, mas os filmes so sao baixados quando lidos. O mount e read-only e o cache VFS tem limite para nao lotar o SSD.
 
 Imagem custom: `wvxbs/rclone-jellyfin`. Veja `docs/RCLONE_JELLYFIN_IMAGE.md`.
 
@@ -127,11 +128,9 @@ A GTX 1650 deve aparecer em containers com:
 docker run --rm --gpus all nvidia/cuda:12.5.1-base-ubuntu22.04 nvidia-smi
 ```
 
-O Plex recebe `NVIDIA_VISIBLE_DEVICES=all`. Para transcoding por hardware, ainda e preciso:
+Jellyfin, Ollama e os monitores recebem `NVIDIA_VISIBLE_DEVICES=all` quando precisam da GPU. Para video, mantenha preferencialmente direct play; transcoding por hardware deve ser usado so quando necessario.
 
-- Plex Pass ativo.
-- Habilitar hardware transcoding nas configuracoes do Plex.
-- Evitar fechar o notebook de um jeito que abafe a saida de ar.
+Evite fechar o notebook de um jeito que abafe a saida de ar.
 
 ## IA Local
 

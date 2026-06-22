@@ -1,43 +1,20 @@
-# GPU, Plex and Video Workloads
+# GPU and Video Workloads
 
-## Validate NVIDIA
+The Nitro has a GTX 1650 with 4 GB VRAM. Use it where it helps, but keep the setup simple:
 
-After reboot:
+- Jellyfin can use GPU acceleration when transcoding is unavoidable.
+- Direct play is preferred for movies from OneDrive, because it avoids unnecessary load.
+- Ollama and local AI workloads can use CUDA, but models must fit inside modest VRAM.
+- `https://gpu.nitro.lan` is the quick source of truth for GTX 1650 load, VRAM, temperature and power state.
+
+Validate container GPU access with:
 
 ```bash
-nvidia-smi
 docker run --rm --gpus all nvidia/cuda:12.5.1-base-ubuntu22.04 nvidia-smi
 ```
 
-If `nvidia-smi` fails after reboot, check whether Secure Boot is enabled. Fedora can require module signing/MOK enrollment for the proprietary NVIDIA driver when Secure Boot is on. The lowest-friction homelab path is usually disabling Secure Boot in firmware.
-
-## Plex Hardware Transcoding
-
-Requirements:
-
-- Plex Pass.
-- Hardware transcoding enabled in Plex settings.
-- Container started with the `media` profile.
-
-Start:
+For host-level checks:
 
 ```bash
-cd /opt/homelab
-docker compose --profile media up -d
+nvidia-smi
 ```
-
-Watch GPU activity:
-
-```bash
-watch -n 1 nvidia-smi
-```
-
-## Upscaling
-
-The repo does not install a dedicated upscaler by default because the best tool depends on your workflow. Good next additions:
-
-- Video2X in a separate container for batch jobs.
-- ffmpeg with NVENC/NVDEC for transcode jobs.
-- Tdarr or Unmanic for automated library processing.
-
-The base NVIDIA Docker runtime is installed so those can be added as Compose services later.

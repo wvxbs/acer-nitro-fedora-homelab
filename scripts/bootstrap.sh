@@ -26,5 +26,7 @@ else
   log "Skipping AI profile. Set INSTALL_AI=1 in config/homelab.env to enable it."
 fi
 
+"$ROOT/scripts/85-codex-users.sh"
+
 log "Bootstrap complete. Reboot before validating NVIDIA containers."
 log "After reboot: $ROOT/scripts/healthcheck.sh"

@@ -33,7 +33,6 @@ http://telemetry.nitro.lan,
 http://jellyfin.nitro.lan,
 http://openwebui.nitro.lan,
 http://ollama.nitro.lan,
-http://plex.nitro.lan,
 http://portainer.nitro.lan,
 http://dozzle.nitro.lan,
 http://glances.nitro.lan,
@@ -84,11 +83,6 @@ https://nitro.lan {
   handle_path /health/ollama {
     rewrite * /api/tags
     reverse_proxy http://127.0.0.1:11434
-  }
-
-  handle_path /health/plex {
-    rewrite * /identity
-    reverse_proxy http://127.0.0.1:32400
   }
 
   handle_path /health/portainer {
@@ -143,11 +137,6 @@ https://openwebui.nitro.lan {
 https://ollama.nitro.lan {
   import local_tls
   reverse_proxy http://127.0.0.1:11434
-}
-
-https://plex.nitro.lan {
-  import local_tls
-  reverse_proxy http://127.0.0.1:32400
 }
 
 https://portainer.nitro.lan {

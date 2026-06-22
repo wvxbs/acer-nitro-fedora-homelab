@@ -16,7 +16,7 @@ Nitro homelab + home machines
 
 ## Recommended Setup
 
-Use Ethernet for the Nitro if convenient. It is more stable for Plex, Docker pulls and big file transfers.
+Use Ethernet for the Nitro if convenient. It is more stable for Jellyfin, Docker pulls, model downloads and big file transfers.
 
 Use Tailscale for access across both sides of the network without opening ports:
 
@@ -28,7 +28,6 @@ tailscale ip -4
 Then access:
 
 - SSH: `ssh user@nitro-homelab` if MagicDNS is enabled, or `ssh user@TAILSCALE_IP`.
-- Plex: `http://TAILSCALE_IP:32400/web`.
 - Open WebUI: `http://TAILSCALE_IP:3000`.
 - Portainer: `https://TAILSCALE_IP:9443`.
 

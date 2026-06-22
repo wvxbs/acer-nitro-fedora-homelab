@@ -1,78 +1,138 @@
 # Remote AI Delegation
 
-This homelab has two different AI roles:
+The Nitro has two distinct AI roles:
 
-- Run agents on the Nitro so the personal Windows machine can stay light.
-- Serve small local models from the Nitro for chat, experiments, summaries, and low-stakes coding help.
+1. **Local model runtime**: Ollama and Open WebUI run on the Nitro so phones and PCs can use small local models without keeping LM Studio open on a personal machine.
+2. **Codex execution host**: Codex work can run against projects on the Nitro through SSH remote projects, with one Linux user and one Codex login per person.
 
-They are related, but not the same thing.
+Do not treat these as one shared account. The correct model is isolated users.
 
-## Recommended Layout
+## What Is Supported For Codex
 
-```text
-Windows / phone / another PC
-  |
-  | Codex App SSH remote project
-  v
-Nitro Linux user account
-  - own ~/.codex
-  - own projects
-  - own shell permissions
-  - can use Docker services
-
-Nitro Docker services
-  - Ollama: local model runtime
-  - Open WebUI: browser UI for users
-  - Caddy: local reverse proxy
-```
-
-Use separate Linux users for separate people. Do not share one Codex session, one
-`~/.codex`, or one home directory between family members.
-
-Good user model:
+The supported homelab pattern is:
 
 ```text
-wvxbs      admin/developer account
-familia    limited operations account
-pai        optional separate parent account
-mae        optional separate parent account
+Codex App on a personal device
+  -> SSH remote project
+  -> Nitro Linux user
+  -> that user's ~/.codex, projects, shell and permissions
 ```
 
-Each Codex user should authenticate Codex in that user's own shell. That keeps
-accounts, tokens, project state, and threads separated.
+This lets the Nitro do the shell/file work while the personal device sends prompts, approvals and follow-ups. It is the practical way to delegate agent work to the server.
 
-## What LM Studio Is Useful For
+Avoid exposing `codex app-server` or `codex exec` as an unauthenticated LAN web service. Codex app-server has local/SSH integration use cases, but a raw listener is not the right family-facing control plane for this homelab.
 
-LM Studio is useful as:
+For scripted jobs, use `codex exec` from that user's shell or a private scheduler. For interactive work, use Codex App remote SSH projects.
 
-- a desktop model manager on Windows;
-- a local OpenAI-compatible API server;
-- a headless runtime on Linux with the `lms` CLI and `llmster` daemon;
-- a quick way to test local models against tools that support OpenAI-compatible APIs.
+## Multi-User Layout
 
-For this server, prefer Docker-managed Ollama/Open WebUI as the default always-on
-service. LM Studio is excellent interactively, but it is not the cleanest Docker
-primitive for this homelab. If you want LM Studio specifically on the Nitro, run
-it as a per-user Linux daemon instead of pretending it is a shared container.
+Recommended Linux users:
 
-## Local Model Expectations
+```text
+wvxbs  admin/developer account
+mae    mother's Codex account and projects
+pai    father's Codex account and projects
+```
 
-The Acer Nitro GTX 1650 has 4 GB VRAM. It is useful, but modest.
+Each user gets:
 
-Good fits:
+```text
+/home/<user>/projects
+/home/<user>/.codex
+/home/<user>/.ssh
+```
 
-- `llama3.2:1b`
-- `llama3.2:3b`
-- `qwen2.5-coder:1.5b`
-- `qwen2.5:3b`
-- `phi3:mini`
+Each person must sign in to Codex with their own ChatGPT/OpenAI account. Do not copy your `~/.codex/auth.json` to another person's account.
 
-Avoid expecting good performance from large models, huge context windows, or
-multiple simultaneous heavy users.
+## Prepare Users
 
-## Start The Docker AI Stack
+Set this in `config/homelab.env` before bootstrap, or export it before running the script:
 
-On the Nitro:
+```bash
+CODEX_USERS="wvxbs mae pai"
+```
+
+Then run:
+
+```bash
+sudo ./scripts/85-codex-users.sh
+```
+
+The script creates missing users with password login locked. Add SSH keys before remote use:
+
+```bash
+sudo install -d -m 0700 -o mae -g mae /home/mae/.ssh
+sudoedit /home/mae/.ssh/authorized_keys
+sudo chown mae:mae /home/mae/.ssh/authorized_keys
+sudo chmod 0600 /home/mae/.ssh/authorized_keys
+```
+
+Repeat for `pai`.
+
+## Configure SSH From A Client
+
+On the computer running Codex App, add aliases to `~/.ssh/config`:
+
+```sshconfig
+Host nitro-codex-wvxbs
+  HostName 192.168.15.8
+  User wvxbs
+  IdentityFile ~/.ssh/id_ed25519
+
+Host nitro-codex-mae
+  HostName 192.168.15.8
+  User mae
+  IdentityFile ~/.ssh/id_ed25519_mae
+
+Host nitro-codex-pai
+  HostName 192.168.15.8
+  User pai
+  IdentityFile ~/.ssh/id_ed25519_pai
+```
+
+Validate before opening Codex:
+
+```bash
+ssh nitro-codex-mae
+```
+
+## Install And Authenticate Codex On The Nitro
+
+Run as each Linux user that will use Codex:
+
+```bash
+curl -fsSL https://chatgpt.com/codex/install.sh | sh
+codex --version
+codex login --device-auth
+```
+
+Device auth is the cleanest path for a server because the browser login happens on another device while credentials are stored under that Linux user's own `~/.codex`.
+
+## Use From Codex App
+
+In Codex App:
+
+1. Open **Settings > Connections**.
+2. Add or enable the SSH host alias, for example `nitro-codex-mae`.
+3. Choose a project folder under `/home/mae/projects`.
+4. Start a thread there.
+
+The prompts and approvals happen from the personal device. Commands and file edits happen on the Nitro under the selected Linux user.
+
+## Codex Automation
+
+For one-shot private jobs:
+
+```bash
+cd ~/projects/some-repo
+codex exec --sandbox workspace-write "summarize this repo and list risky areas"
+```
+
+Use `codex exec` for scheduled or scripted tasks. Keep it private, per-user, and never expose it directly to the internet or to a shared web button.
+
+## Local Models
+
+Start the local model stack:
 
 ```bash
 cd /opt/homelab
@@ -81,115 +141,57 @@ docker exec -it ollama ollama pull llama3.2:3b
 docker exec -it ollama ollama pull qwen2.5-coder:1.5b
 ```
 
-Local URLs through the reverse proxy:
+Local URLs:
 
 ```text
-http://openwebui.nitro.lan
-http://ollama.nitro.lan
+https://openwebui.nitro.lan
+https://ollama.nitro.lan
 ```
 
-Direct service ports:
+Direct endpoints:
 
 ```text
 http://192.168.15.8:3000   Open WebUI
 http://192.168.15.8:11434  Ollama API
+http://192.168.15.8:11434/v1 OpenAI-compatible Ollama API
 ```
 
-Open WebUI has its own login system. Create one account per person there.
+Open WebUI has its own login system. Create one Open WebUI account per person.
 
-## Codex Remote Delegation
+## LM Studio And LM Link Role
 
-The supported Codex pattern for this homelab is SSH remote projects:
+Use LM Studio on Windows mainly as a model tester, client, or LM Link participant. LM Link can route requests from one machine to a model loaded on another linked machine, while the local app/API still feels local to the caller. In this homelab, that is useful in two directions:
 
-1. Create a separate Linux user for each person that will use Codex.
-2. Add that SSH host to the Windows user's `~/.ssh/config`.
-3. Install Codex CLI on the Nitro for that Linux user.
-4. Authenticate Codex as that Linux user.
-5. In the Codex App, open `Settings > Connections`, add the SSH host, and choose
-   the remote project folder.
+- Dell/Windows can use a model running on the Nitro without keeping the heavy model loaded on the Dell.
+- A stronger future machine could serve models while the Nitro continues to host Jellyfin, DNS, dashboards and lightweight agents.
 
-Example Windows SSH config:
+LM Link is not a replacement for Codex remote SSH projects. It routes model inference; it does not isolate Codex accounts, project files, shells, approvals or agent state. For Codex delegation, keep using per-user SSH remote projects.
 
-```sshconfig
-Host nitro-codex-wvxbs
-  HostName 192.168.15.8
-  User wvxbs
-  IdentityFile ~/.ssh/id_ed25519
-
-Host nitro-codex-familia
-  HostName 192.168.15.8
-  User familia
-  IdentityFile ~/.ssh/id_ed25519_familia
-```
-
-Confirm SSH before using it in Codex:
-
-```powershell
-ssh nitro-codex-wvxbs
-```
-
-Install Codex CLI on the Nitro user account:
-
-```bash
-curl -fsSL https://chatgpt.com/codex/install.sh | sh
-codex --version
-```
-
-Authenticate on the Nitro:
-
-```bash
-codex login --device-auth
-```
-
-Device auth is the cleanest path for a headless server. Each person should run
-that command in their own Linux user account and sign in with their own ChatGPT
-account.
-
-## Codex Automation
-
-For scripted jobs, use `codex exec` in the user's shell:
-
-```bash
-codex exec --sandbox workspace-write "summarize this repo and list risky areas"
-```
-
-Use this for scheduled or one-shot tasks. Do not expose `codex exec` behind a
-public unauthenticated web endpoint.
-
-## Using Nitro Models From Windows Tools
-
-Tools that accept an OpenAI-compatible endpoint can point to the Nitro model
-runtime.
-
-Ollama direct API:
-
-```text
-http://192.168.15.8:11434
-```
-
-If a tool expects an OpenAI-style base URL, try:
+The always-on default service remains Nitro-hosted Ollama/Open WebUI. If a tool accepts an OpenAI-compatible endpoint, point it to:
 
 ```text
 http://192.168.15.8:11434/v1
 ```
 
-For LM Studio on Windows, use it primarily to:
+LM Studio also exposes OpenAI-compatible endpoints when its server is running, and its headless `llmster` daemon is a viable future alternative to Ollama if we decide LM Studio should be the server runtime. For now, avoid running both Ollama and LM Studio as competing always-on model servers on the GTX 1650 unless there is a specific test.
 
-- test models locally on Windows;
-- call a remote OpenAI-compatible endpoint when the app/tool supports custom
-  providers;
-- compare output quality before deciding what model to pull on the Nitro.
+The GTX 1650 has 4 GB VRAM. Good model candidates:
 
-Do not leave the Windows LM Studio process as the required backend for the
-homelab. The whole point is that the Nitro should be the always-on runtime.
+```text
+llama3.2:1b
+llama3.2:3b
+qwen2.5-coder:1.5b
+qwen2.5:3b
+phi3:mini
+```
+
+Avoid large models, huge context windows and multiple heavy simultaneous generations.
 
 ## Security Notes
 
 - Keep Codex authentication per Linux user.
-- Never commit `~/.codex/auth.json`, API keys, model tokens, or browser session
-  exports.
+- Never commit or share `~/.codex/auth.json`.
 - Prefer SSH keys over passwords.
 - Keep Open WebUI authenticated.
-- Do not expose Ollama, Open WebUI, or Codex automation directly to the public
-  internet.
+- Do not expose Ollama, Open WebUI or Codex automation directly to the public internet.
 - For remote access outside the LAN, use Tailscale instead of port forwarding.

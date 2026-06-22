@@ -75,7 +75,6 @@ telemetry.nitro.lan
 jellyfin.nitro.lan
 openwebui.nitro.lan
 ollama.nitro.lan
-plex.nitro.lan
 portainer.nitro.lan
 dozzle.nitro.lan
 ```
