@@ -48,6 +48,17 @@ Mount container: wvxbs/rclone-jellyfin
 Cache policy: bounded VFS cache, dynamic reads from OneDrive
 ```
 
+## Local AI
+
+```text
+Ollama       https://ollama.nitro.lan
+Open WebUI   https://openwebui.nitro.lan
+Models       llama3.2:3b, qwen2.5-coder:1.5b
+Codex CLI    installed per Linux user during that user's setup/login, not shared globally
+```
+
+Codex delegation uses SSH remote projects and isolated Linux users. See `docs/REMOTE_AI_DELEGATION.md`.
+
 ## Family Access
 
 The optional limited OS user defaults to:
