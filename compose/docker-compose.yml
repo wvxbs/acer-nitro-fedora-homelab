@@ -70,6 +70,20 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
+  glances:
+    image: nicolargo/glances:latest-full
+    container_name: glances
+    profiles: ["ops"]
+    restart: unless-stopped
+    pid: host
+    ports:
+      - "61208:61208"
+    environment:
+      GLANCES_OPT: "-w --disable-plugin gpu"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /etc/os-release:/etc/os-release:ro
+
   performance:
     image: python:3.12-slim
     container_name: performance
@@ -82,10 +96,13 @@ services:
       NVIDIA_DRIVER_CAPABILITIES: compute,utility
       HOST_PROC: /host/proc
       HOST_SYS: /host/sys
+      HOST_DEBUG: /host/debug
+      NVIDIA_POLL_SECONDS: "30"
     volumes:
       - ./performance/server.py:/app/server.py:ro
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
+      - /sys/kernel/debug:/host/debug:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
     command: python /app/server.py
     gpus: all

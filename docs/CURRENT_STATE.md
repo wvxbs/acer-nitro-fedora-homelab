@@ -30,6 +30,7 @@ Open WebUI     https://openwebui.nitro.lan
 Portainer      https://portainer.nitro.lan
 Dozzle         https://dozzle.nitro.lan
 Performance    https://performance.nitro.lan
+Processes      https://processes.nitro.lan
 ```
 
 Ollama and Open WebUI are part of the AI profile. The dashboard keeps optional links visible and marks their healthcheck offline when a profile is stopped.

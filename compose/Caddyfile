@@ -35,7 +35,8 @@ http://openwebui.nitro.lan,
 http://ollama.nitro.lan,
 http://portainer.nitro.lan,
 http://dozzle.nitro.lan,
-http://performance.nitro.lan {
+http://performance.nitro.lan,
+http://processes.nitro.lan {
   redir https://{host}{uri} 308
 }
 
@@ -85,8 +86,10 @@ https://nitro.lan {
   }
 
   handle_path /health/portainer {
-    rewrite * /api/status
+    rewrite * /api/system/status
     reverse_proxy https://127.0.0.1:9443 {
+      header_up Host {host}
+      header_up X-Forwarded-Host {host}
       transport http {
         tls_insecure_skip_verify
       }
@@ -95,6 +98,10 @@ https://nitro.lan {
 
   handle_path /health/dozzle {
     reverse_proxy http://127.0.0.1:9999
+  }
+
+  handle_path /health/processes {
+    reverse_proxy http://127.0.0.1:61208
   }
 
   handle_path /health/performance {
@@ -138,6 +145,8 @@ https://ollama.nitro.lan {
 https://portainer.nitro.lan {
   import local_tls
   reverse_proxy https://127.0.0.1:9443 {
+    header_up Host {host}
+    header_up X-Forwarded-Host {host}
     transport http {
       tls_insecure_skip_verify
     }
@@ -152,4 +161,10 @@ https://dozzle.nitro.lan {
 https://performance.nitro.lan {
   import local_tls
   reverse_proxy http://127.0.0.1:9837
+}
+
+
+https://processes.nitro.lan {
+  import local_tls
+  reverse_proxy http://127.0.0.1:61208
 }
