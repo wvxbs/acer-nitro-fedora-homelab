@@ -1,21 +1,25 @@
 # Monitoring
 
-The quick web monitor is Glances:
+The homelab exposes one consolidated performance endpoint:
 
 ```text
-https://glances.nitro.lan
+https://performance.nitro.lan
 ```
 
-It is the browser-friendly equivalent of `btop`/`bashtop` for this homelab. It
-shows CPU, memory, disk, network, processes and Docker containers. The container
-also receives NVIDIA runtime flags so compatible GPU metrics can appear when the
-Glances image and host driver expose them.
+It replaces the older split between Glances and the NVIDIA-only page. The page is intentionally simple and mobile-friendly, but keeps the important "bashtop-like" information in one place:
+
+- CPU utilization, load average and estimated package power via Intel RAPL when the host exposes it.
+- Memory and disk usage.
+- NVIDIA GTX 1650 utilization, VRAM, temperature and power via `nvidia-smi`.
+- Host temperature sensors exposed through `/sys/class/thermal`.
+- Active Docker containers through the read-only Docker socket.
+- Short in-browser history for CPU, GPU and memory.
 
 Start it with the ops profile:
 
 ```bash
 cd /opt/homelab
-docker compose --profile ops up -d glances
+docker compose --profile ops up -d performance portainer dozzle
 ```
 
 For direct CLI checks on the host:
@@ -27,15 +31,4 @@ free -h
 df -h
 ```
 
-If GPU data is missing from Glances, `nvidia-smi` remains the source of truth for
-GTX 1650 utilization, VRAM, temperature and power state.
-
-The homelab also exposes a tiny NVIDIA-specific page backed by `nvidia-smi`:
-
-```text
-https://gpu.nitro.lan
-https://gpu.nitro.lan/json
-```
-
-This is intentionally simpler than a full metrics stack and is meant for quick
-checks from a phone or browser.
+If CPU package power shows `n/d`, the host kernel did not expose Intel RAPL data to the container. GPU power and temperature still come from `nvidia-smi`.

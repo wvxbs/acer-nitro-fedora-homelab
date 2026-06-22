@@ -70,37 +70,41 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
-  glances:
-    image: nicolargo/glances:latest-full
-    container_name: glances
+  performance:
+    image: python:3.12-slim
+    container_name: performance
     profiles: ["ops"]
     restart: unless-stopped
-    pid: host
     ports:
-      - "61208:61208"
+      - "9837:9837"
     environment:
-      GLANCES_OPT: "-w"
       NVIDIA_VISIBLE_DEVICES: all
       NVIDIA_DRIVER_CAPABILITIES: compute,utility
+      HOST_PROC: /host/proc
+      HOST_SYS: /host/sys
     volumes:
+      - ./performance/server.py:/app/server.py:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /etc/os-release:/etc/os-release:ro
+    command: python /app/server.py
     gpus: all
 
-  nvidia-web:
-    image: python:3.12-slim
-    container_name: nvidia-web
-    profiles: ["ops"]
+  codex-wvxbs:
+    build:
+      context: ./codex-runner
+    image: nitro/codex-runner:latest
+    container_name: codex-wvxbs
+    profiles: ["ai"]
     restart: unless-stopped
-    ports:
-      - "9836:9836"
     environment:
-      NVIDIA_VISIBLE_DEVICES: all
-      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+      OLLAMA_HOST: http://ollama:11434
+      OPENAI_BASE_URL: http://ollama:11434/v1
+      CODEX_HOME: /home/node/.codex
     volumes:
-      - ./monitoring/nvidia-web.py:/app/nvidia-web.py:ro
-    command: python /app/nvidia-web.py
-    gpus: all
+      - "${APPDATA_DIR}/codex/wvxbs/home:/home/node"
+      - /home/wvxbs/projects:/workspace
+    working_dir: /workspace
 
   ollama:
     image: ollama/ollama:latest

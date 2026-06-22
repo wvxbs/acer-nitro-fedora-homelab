@@ -35,8 +35,7 @@ http://openwebui.nitro.lan,
 http://ollama.nitro.lan,
 http://portainer.nitro.lan,
 http://dozzle.nitro.lan,
-http://glances.nitro.lan,
-http://gpu.nitro.lan {
+http://performance.nitro.lan {
   redir https://{host}{uri} 308
 }
 
@@ -98,12 +97,9 @@ https://nitro.lan {
     reverse_proxy http://127.0.0.1:9999
   }
 
-  handle_path /health/glances {
-    reverse_proxy http://127.0.0.1:61208
-  }
-
-  handle_path /health/gpu {
-    reverse_proxy http://127.0.0.1:9836
+  handle_path /health/performance {
+    rewrite * /health
+    reverse_proxy http://127.0.0.1:9837
   }
 
   file_server
@@ -153,12 +149,7 @@ https://dozzle.nitro.lan {
   reverse_proxy http://127.0.0.1:9999
 }
 
-https://glances.nitro.lan {
+https://performance.nitro.lan {
   import local_tls
-  reverse_proxy http://127.0.0.1:61208
-}
-
-https://gpu.nitro.lan {
-  import local_tls
-  reverse_proxy http://127.0.0.1:9836
+  reverse_proxy http://127.0.0.1:9837
 }

@@ -14,7 +14,7 @@ O objetivo e rodar tudo com o minimo de friccao:
 - Delegacao de Codex por SSH remoto, com usuarios Linux separados por pessoa.
 - Perfil opcional de DNS com AdGuard Home para bloqueio conservador de ads/trackers.
 - Painel local em `https://nitro.lan` com links e healthchecks dos servicos.
-- Monitoramento web com Glances e painel simples da GTX 1650 via `nvidia-smi`.
+- Monitoramento web unico em `performance.nitro.lan`, com CPU, GPU, potencia, temperatura, historico e containers.
 
 ## Uso Rapido
 
@@ -75,11 +75,10 @@ Para monitoramento rapido:
 
 ```bash
 cd /opt/homelab
-docker compose --profile ops up -d glances nvidia-web
+docker compose --profile ops up -d performance portainer dozzle
 ```
 
-Use `https://glances.nitro.lan` para CPU/RAM/disco/Docker e
-`https://gpu.nitro.lan` para a GTX 1650.
+Use `https://performance.nitro.lan` para CPU/RAM/disco/Docker, historico, potencia, temperatura e GTX 1650.
 
 Para IA local:
 

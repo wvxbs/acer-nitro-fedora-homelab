@@ -22,8 +22,7 @@ https://openwebui.nitro.lan
 https://ollama.nitro.lan
 https://portainer.nitro.lan
 https://dozzle.nitro.lan
-https://glances.nitro.lan
-https://gpu.nitro.lan
+https://performance.nitro.lan
 ```
 
 The base dashboard is intentionally simple and mobile-friendly. It is served by
@@ -71,8 +70,7 @@ openwebui.nitro.lan    -> 192.168.15.8
 ollama.nitro.lan       -> 192.168.15.8
 portainer.nitro.lan    -> 192.168.15.8
 dozzle.nitro.lan       -> 192.168.15.8
-glances.nitro.lan      -> 192.168.15.8
-gpu.nitro.lan          -> 192.168.15.8
+performance.nitro.lan  -> 192.168.15.8
 ```
 
 ## Validation
@@ -81,6 +79,6 @@ gpu.nitro.lan          -> 192.168.15.8
 curl -k -I https://nitro.lan/
 curl -k -I https://nitro.lan/health/jellyfin
 curl -k -I https://nitro.lan/health/adguard
-curl -k -I https://glances.nitro.lan/
-curl -k -I https://gpu.nitro.lan/
+curl -k -I https://performance.nitro.lan/
+curl -k -I https://nitro.lan/health/performance
 ```

@@ -119,6 +119,51 @@ In Codex App:
 
 The prompts and approvals happen from the personal device. Commands and file edits happen on the Nitro under the selected Linux user.
 
+
+## Containerized Codex Runner
+
+For the main admin account, the stack also includes a persistent Codex container:
+
+```bash
+cd /opt/homelab
+docker compose --profile ai up -d codex-wvxbs
+```
+
+The container stores its Linux home directory and Codex state under:
+
+```text
+${APPDATA_DIR}/codex/wvxbs/home
+```
+
+Inside the container this is mounted as `/home/node`, with Codex state in `/home/node/.codex`.
+
+Projects are mounted from the host into:
+
+```text
+/workspace
+```
+
+Authenticate inside the container when needed:
+
+```bash
+docker exec -it codex-wvxbs codex login --device-auth
+```
+
+Run an interactive shell:
+
+```bash
+docker exec -it codex-wvxbs bash
+```
+
+Run a one-shot task against a cloned project:
+
+```bash
+docker exec -it -w /workspace/acer-nitro-fedora-homelab codex-wvxbs \
+  codex exec --sandbox workspace-write "summarize current git status"
+```
+
+This is useful for Portainer-managed, always-on Codex jobs under the `wvxbs` admin context. For your mother and father, keep the per-user SSH pattern unless we intentionally add separate containers and separate Codex auth volumes for each person.
+
 ## Codex Automation
 
 For one-shot private jobs:
