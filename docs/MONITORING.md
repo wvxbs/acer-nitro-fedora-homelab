@@ -36,3 +36,12 @@ Notes:
 - Intel iGPU data comes from read-only i915 debugfs when available.
 - CPU package power comes from Intel RAPL.
 - If NVIDIA remains in `P0` while idle, reboot once after `scripts/35-power-tuning.sh` so `NVreg_DynamicPowerManagement=0x02` is applied when the module loads.
+
+
+## Security
+
+```text
+https://security.nitro.lan
+```
+
+This panel shows authentication-related events from the host journal and recent physical-console failed-login captures. Webcam/audio capture is limited to failed local TTY login events; remote services such as Cockpit and SSH are logged without media capture.

@@ -107,6 +107,21 @@ services:
     command: python /app/server.py
     gpus: all
 
+  security:
+    image: python:3.12-slim
+    container_name: security
+    profiles: ["ops"]
+    restart: unless-stopped
+    ports:
+      - "9838:9838"
+    environment:
+      SECURITY_DATA_DIR: /data
+      SECURITY_PORT: "9838"
+    volumes:
+      - ./security/server.py:/app/server.py:ro
+      - "${SECURITY_DATA_DIR:-/srv/appdata/security}:/data:ro"
+    command: python /app/server.py
+
   codex-wvxbs:
     build:
       context: ./codex-runner

@@ -23,6 +23,7 @@ https://ollama.nitro.lan
 https://portainer.nitro.lan
 https://dozzle.nitro.lan
 https://performance.nitro.lan
+https://security.nitro.lan
 https://processes.nitro.lan
 ```
 
@@ -72,6 +73,7 @@ ollama.nitro.lan       -> 192.168.15.8
 portainer.nitro.lan    -> 192.168.15.8
 dozzle.nitro.lan       -> 192.168.15.8
 performance.nitro.lan  -> 192.168.15.8
+security.nitro.lan     -> 192.168.15.8
 processes.nitro.lan    -> 192.168.15.8
 ```
 
@@ -82,7 +84,9 @@ curl -k -I https://nitro.lan/
 curl -k -I https://nitro.lan/health/jellyfin
 curl -k -I https://nitro.lan/health/adguard
 curl -k -I https://performance.nitro.lan/
+curl -k -I https://security.nitro.lan/
 curl -k -I https://processes.nitro.lan/
 curl -k -I https://nitro.lan/health/performance
+curl -k -I https://nitro.lan/health/security
 curl -k -I https://nitro.lan/health/processes
 ```

@@ -36,6 +36,7 @@ http://ollama.nitro.lan,
 http://portainer.nitro.lan,
 http://dozzle.nitro.lan,
 http://performance.nitro.lan,
+http://security.nitro.lan,
 http://processes.nitro.lan {
   redir https://{host}{uri} 308
 }
@@ -109,6 +110,11 @@ https://nitro.lan {
     reverse_proxy http://127.0.0.1:9837
   }
 
+  handle_path /health/security {
+    rewrite * /health
+    reverse_proxy http://127.0.0.1:9838
+  }
+
   file_server
 }
 
@@ -163,6 +169,10 @@ https://performance.nitro.lan {
   reverse_proxy http://127.0.0.1:9837
 }
 
+https://security.nitro.lan {
+  import local_tls
+  reverse_proxy http://127.0.0.1:9838
+}
 
 https://processes.nitro.lan {
   import local_tls

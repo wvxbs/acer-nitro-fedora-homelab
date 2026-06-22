@@ -15,6 +15,7 @@ O objetivo e rodar tudo com o minimo de friccao:
 - Perfil opcional de DNS com AdGuard Home para bloqueio conservador de ads/trackers.
 - Painel local em `https://nitro.lan` com links e healthchecks dos servicos.
 - Monitoramento web unico em `performance.nitro.lan`, com CPU, GPU, potencia, temperatura, historico e containers.
+- Painel de seguranca em `security.nitro.lan`, com eventos auth e captura limitada a falha de login fisico TTY.
 
 ## Uso Rapido
 
