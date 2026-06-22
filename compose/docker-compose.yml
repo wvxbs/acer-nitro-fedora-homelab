@@ -194,5 +194,6 @@ services:
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - ./dashboard:/srv/dashboard:ro
+      - ./sites:/srv/sites:ro
       - "${APPDATA_DIR}/caddy/data:/data"
       - "${APPDATA_DIR}/caddy/config:/config"

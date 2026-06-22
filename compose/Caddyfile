@@ -37,6 +37,7 @@ http://portainer.nitro.lan,
 http://dozzle.nitro.lan,
 http://performance.nitro.lan,
 http://security.nitro.lan,
+http://rcfeventos.nitro.lan,
 http://processes.nitro.lan {
   redir https://{host}{uri} 308
 }
@@ -172,6 +173,13 @@ https://performance.nitro.lan {
 https://security.nitro.lan {
   import local_tls
   reverse_proxy http://127.0.0.1:9838
+}
+
+https://rcfeventos.nitro.lan {
+  import local_tls
+  root * /srv/sites/rcfeventos
+  try_files {path} {path}/ /index.html
+  file_server
 }
 
 https://processes.nitro.lan {

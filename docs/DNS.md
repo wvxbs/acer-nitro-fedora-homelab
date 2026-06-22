@@ -77,6 +77,9 @@ openwebui.nitro.lan
 ollama.nitro.lan
 portainer.nitro.lan
 dozzle.nitro.lan
+performance.nitro.lan
+security.nitro.lan
+processes.nitro.lan
 ```
 
 ## If Something Breaks

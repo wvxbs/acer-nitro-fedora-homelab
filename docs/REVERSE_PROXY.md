@@ -24,6 +24,7 @@ https://portainer.nitro.lan
 https://dozzle.nitro.lan
 https://performance.nitro.lan
 https://security.nitro.lan
+https://rcfeventos.nitro.lan
 https://processes.nitro.lan
 ```
 
@@ -74,6 +75,7 @@ portainer.nitro.lan    -> 192.168.15.8
 dozzle.nitro.lan       -> 192.168.15.8
 performance.nitro.lan  -> 192.168.15.8
 security.nitro.lan     -> 192.168.15.8
+rcfeventos.nitro.lan   -> 192.168.15.8
 processes.nitro.lan    -> 192.168.15.8
 ```
 

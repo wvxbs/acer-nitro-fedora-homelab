@@ -30,6 +30,7 @@ Open WebUI     https://openwebui.nitro.lan
 Portainer      https://portainer.nitro.lan
 Dozzle         https://dozzle.nitro.lan
 Performance    https://performance.nitro.lan
+Security       https://security.nitro.lan
 Processes      https://processes.nitro.lan
 ```
 
