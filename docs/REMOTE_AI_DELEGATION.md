@@ -156,6 +156,15 @@ http://192.168.15.8:11434  Ollama API
 http://192.168.15.8:11434/v1 OpenAI-compatible Ollama API
 ```
 
+Configured model aliases:
+
+```text
+nitro-coder -> qwen2.5-coder:1.5b
+nitro-chat  -> llama3.2:3b
+```
+
+Use `nitro-coder` for lightweight coding/help tasks and `nitro-chat` for general chat.
+
 Open WebUI has its own login system. Create one Open WebUI account per person.
 
 ## LM Studio And LM Link Role
@@ -172,6 +181,8 @@ The always-on default service remains Nitro-hosted Ollama/Open WebUI. If a tool 
 ```text
 http://192.168.15.8:11434/v1
 ```
+
+Use model name `nitro-coder` for the default remote coding model.
 
 LM Studio also exposes OpenAI-compatible endpoints when its server is running, and its headless `llmster` daemon is a viable future alternative to Ollama if we decide LM Studio should be the server runtime. For now, avoid running both Ollama and LM Studio as competing always-on model servers on the GTX 1650 unless there is a specific test.
 

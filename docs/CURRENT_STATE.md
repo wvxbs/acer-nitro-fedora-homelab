@@ -53,7 +53,7 @@ Cache policy: bounded VFS cache, dynamic reads from OneDrive
 ```text
 Ollama       https://ollama.nitro.lan
 Open WebUI   https://openwebui.nitro.lan
-Models       llama3.2:3b, qwen2.5-coder:1.5b
+Models       nitro-coder, nitro-chat, llama3.2:3b, qwen2.5-coder:1.5b
 Codex CLI    installed per Linux user during that user's setup/login, not shared globally
 ```
 
