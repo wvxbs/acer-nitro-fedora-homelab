@@ -9,6 +9,7 @@ load_config
 log "Configuring storage"
 
 install -d -m 0755 "$STORAGE_ROOT" "$MEDIA_DIR" "$ONEDRIVE_MOUNT_PATH" "$APPDATA_DIR" "$RCLONE_CACHE_DIR"
+install -d -m 0775 "$FILE_DROP_DIR"
 
 chown -R "$ADMIN_USER":"$ADMIN_USER" "$APPDATA_DIR" "$STORAGE_ROOT" || true
 

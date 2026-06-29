@@ -13,7 +13,7 @@ After first boot:
 
 ```bash
 sudo dnf install -y git
-git clone https://github.com/SEU_USUARIO/acer-nitro-fedora-homelab.git
+git clone https://github.com/wvxbs/acer-nitro-fedora-homelab.git
 cd acer-nitro-fedora-homelab
 cp config/homelab.env.example config/homelab.env
 nano config/homelab.env

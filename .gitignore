@@ -6,3 +6,5 @@ secrets/
 runtime/
 logs/
 *.log
+__pycache__/
+*.py[cod]

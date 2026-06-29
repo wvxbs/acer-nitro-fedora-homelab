@@ -16,7 +16,18 @@ Nitro homelab + home machines
 
 ## Recommended Setup
 
-Use Ethernet for the Nitro if convenient. It is more stable for Jellyfin, Docker pulls, model downloads and big file transfers.
+Use Ethernet as the primary Nitro path. It is more stable for Jellyfin, Docker pulls, model downloads and big file transfers. Keep Wi-Fi connected only as a high-metric fallback:
+
+```text
+enp7s0: 192.168.15.8/24, default route metric 100
+wlp8s0: DHCP, default route metric 600
+```
+
+To reapply the intended NetworkManager profiles:
+
+```bash
+sudo ./scripts/55-network-failover.sh
+```
 
 Use Tailscale for access across both sides of the network without opening ports:
 

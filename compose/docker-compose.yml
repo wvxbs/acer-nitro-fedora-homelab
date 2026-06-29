@@ -38,12 +38,13 @@ services:
     depends_on:
       - rclone-jellyfin
     environment:
-      JELLYFIN_PublishedServerUrl: "https://jellyfin.nitro.lan"
+      JELLYFIN_PublishedServerUrl: "http://jellyfin.nitro.lan"
       NVIDIA_VISIBLE_DEVICES: all
       NVIDIA_DRIVER_CAPABILITIES: compute,video,utility
     volumes:
       - "${APPDATA_DIR}/jellyfin/config:/config"
       - "${APPDATA_DIR}/jellyfin/cache:/cache"
+      - "${APPDATA_DIR}/jellyfin-media/movies-clean:/media/movies-clean:ro"
       - "${MEDIA_DIR}:/media:ro,rslave"
     devices:
       - /dev/dri:/dev/dri
@@ -87,20 +88,52 @@ services:
       - /etc/os-release:/etc/os-release:ro
     gpus: all
 
-  nvidia-web:
+  performance-web:
     image: python:3.12-slim
-    container_name: nvidia-web
+    container_name: performance-web
     profiles: ["ops"]
     restart: unless-stopped
     ports:
-      - "9836:9836"
+      - "9837:9837"
     environment:
+      NITRO_PROC_PATH: /host/proc
+      NITRO_SYS_PATH: /host/sys
+      NITRO_ROOT_PATH: /host/root
+      NITRO_DEBUG_PATH: /host/debug
       NVIDIA_VISIBLE_DEVICES: all
       NVIDIA_DRIVER_CAPABILITIES: compute,utility
     volumes:
-      - ./monitoring/nvidia-web.py:/app/nvidia-web.py:ro
-    command: python /app/nvidia-web.py
+      - ./performance/server.py:/app/performance-web.py:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /sys/kernel/debug:/host/debug:ro
+      - /:/host/root:ro,rslave
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command: python /app/performance-web.py
     gpus: all
+
+  host-terminal:
+    build:
+      context: ./host-terminal
+    image: nitro/host-terminal:latest
+    container_name: host-terminal
+    profiles: ["terminal"]
+    restart: unless-stopped
+    privileged: true
+    pid: host
+    ports:
+      - "127.0.0.1:${TERMINAL_PORT:-7681}:7681"
+    environment:
+      TERMINAL_AUTH_MODE: "${TERMINAL_AUTH_MODE:-proxy}"
+      TERMINAL_USERNAME: "${TERMINAL_USERNAME:-admin}"
+      TERMINAL_PASSWORD: "${TERMINAL_PASSWORD:-}"
+      TERMINAL_WORKDIR: "${TERMINAL_WORKDIR:-/root}"
+      TERMINAL_SHELL: "${TERMINAL_SHELL:-/bin/bash}"
+    security_opt:
+      - label:disable
+    read_only: true
+    tmpfs:
+      - /tmp
 
   ollama:
     image: ollama/ollama:latest
@@ -128,8 +161,140 @@ services:
     environment:
       OLLAMA_BASE_URL: http://ollama:11434
       WEBUI_AUTH: "true"
+      BYPASS_MODEL_ACCESS_CONTROL: "${OPENWEBUI_BYPASS_MODEL_ACCESS_CONTROL:-true}"
+      ENABLE_SIGNUP: "${OPENWEBUI_ENABLE_SIGNUP:-true}"
+      DEFAULT_MODELS: "${OPENWEBUI_DEFAULT_MODELS:-qwen3-openclaw:latest}"
     volumes:
       - "${APPDATA_DIR}/open-webui:/app/backend/data"
+
+  openclaw-gateway:
+    image: "${OPENCLAW_IMAGE:-ghcr.io/openclaw/openclaw:latest}"
+    container_name: openclaw-gateway
+    profiles: ["ai"]
+    restart: unless-stopped
+    depends_on:
+      - ollama
+    ports:
+      - "${OPENCLAW_GATEWAY_PORT:-18789}:18789"
+      - "${OPENCLAW_BRIDGE_PORT:-18790}:18790"
+    environment:
+      HOME: /home/node
+      OPENCLAW_HOME: /home/node
+      OPENCLAW_STATE_DIR: /home/node/.openclaw
+      OPENCLAW_CONFIG_PATH: /home/node/.openclaw/openclaw.json
+      OPENCLAW_CONFIG_DIR: /home/node/.openclaw
+      OPENCLAW_WORKSPACE_DIR: /home/node/.openclaw/workspace
+      OPENCLAW_GATEWAY_TOKEN: "${OPENCLAW_GATEWAY_TOKEN:-}"
+      OPENCLAW_ALLOW_INSECURE_PRIVATE_WS: "${OPENCLAW_ALLOW_INSECURE_PRIVATE_WS:-}"
+      OPENCLAW_DISABLE_BONJOUR: "${OPENCLAW_DISABLE_BONJOUR:-1}"
+      OPENCLAW_TZ: "${TZ:-America/Sao_Paulo}"
+      OLLAMA_API_KEY: "${OPENCLAW_OLLAMA_API_KEY:-ollama-local}"
+      TZ: "${TZ:-America/Sao_Paulo}"
+    volumes:
+      - "${APPDATA_DIR}/openclaw:/home/node/.openclaw"
+      - "${APPDATA_DIR}/openclaw-auth-profile-secrets:/home/node/.config/openclaw"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    cap_drop:
+      - NET_RAW
+      - NET_ADMIN
+    security_opt:
+      - no-new-privileges:true
+    init: true
+    command: ["node", "dist/index.js", "gateway", "--bind", "lan", "--port", "18789"]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:18789/healthz').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  openclaw-cli:
+    image: "${OPENCLAW_IMAGE:-ghcr.io/openclaw/openclaw:latest}"
+    container_name: openclaw-cli
+    profiles: ["ai-tools"]
+    network_mode: "service:openclaw-gateway"
+    environment:
+      HOME: /home/node
+      OPENCLAW_HOME: /home/node
+      OPENCLAW_STATE_DIR: /home/node/.openclaw
+      OPENCLAW_CONFIG_PATH: /home/node/.openclaw/openclaw.json
+      OPENCLAW_CONFIG_DIR: /home/node/.openclaw
+      OPENCLAW_WORKSPACE_DIR: /home/node/.openclaw/workspace
+      OPENCLAW_GATEWAY_TOKEN: "${OPENCLAW_GATEWAY_TOKEN:-}"
+      OLLAMA_API_KEY: "${OPENCLAW_OLLAMA_API_KEY:-ollama-local}"
+      TZ: "${TZ:-America/Sao_Paulo}"
+    volumes:
+      - "${APPDATA_DIR}/openclaw:/home/node/.openclaw"
+      - "${APPDATA_DIR}/openclaw-auth-profile-secrets:/home/node/.config/openclaw"
+    cap_drop:
+      - NET_RAW
+      - NET_ADMIN
+    security_opt:
+      - no-new-privileges:true
+    stdin_open: true
+    tty: true
+    init: true
+    entrypoint: ["node", "dist/index.js"]
+    depends_on:
+      - openclaw-gateway
+
+  minecraft-java:
+    image: itzg/minecraft-server:java25
+    container_name: minecraft-java
+    profiles: ["games"]
+    restart: unless-stopped
+    ports:
+      - "${MINECRAFT_BIND_IP:-0.0.0.0}:${MINECRAFT_JAVA_PORT:-25565}:25565/tcp"
+    environment:
+      EULA: "TRUE"
+      TYPE: "PAPER"
+      VERSION: "LATEST"
+      MEMORY: "${MINECRAFT_JAVA_MEMORY:-6G}"
+      USE_AIKAR_FLAGS: "true"
+      TZ: "${TZ:-America/Sao_Paulo}"
+      SERVER_NAME: "${MINECRAFT_JAVA_MOTD:-Nitro Java}"
+      MOTD: "${MINECRAFT_JAVA_MOTD:-Nitro Java}"
+      LEVEL: "${MINECRAFT_JAVA_LEVEL_NAME:-Nitro-Java}"
+      DIFFICULTY: "${MINECRAFT_JAVA_DIFFICULTY:-normal}"
+      MAX_PLAYERS: "${MINECRAFT_JAVA_MAX_PLAYERS:-10}"
+      ONLINE_MODE: "true"
+      ENABLE_WHITELIST: "${MINECRAFT_JAVA_ENABLE_WHITELIST:-false}"
+      ENFORCE_WHITELIST: "${MINECRAFT_JAVA_ENFORCE_WHITELIST:-false}"
+      WHITELIST: "${MINECRAFT_JAVA_WHITELIST:-}"
+      OPS: "${MINECRAFT_JAVA_OPS:-}"
+      ENABLE_RCON: "${MINECRAFT_JAVA_ENABLE_RCON:-false}"
+      RCON_PASSWORD: "${MINECRAFT_JAVA_RCON_PASSWORD:-}"
+      VIEW_DISTANCE: "10"
+      SIMULATION_DISTANCE: "8"
+    volumes:
+      - "${APPDATA_DIR}/minecraft-java:/data"
+    tty: true
+    stdin_open: true
+
+  minecraft-bedrock:
+    image: itzg/minecraft-bedrock-server:latest
+    container_name: minecraft-bedrock
+    profiles: ["games"]
+    restart: unless-stopped
+    ports:
+      - "${MINECRAFT_BIND_IP:-0.0.0.0}:${MINECRAFT_BEDROCK_PORT:-19132}:19132/udp"
+    environment:
+      EULA: "TRUE"
+      TZ: "${TZ:-America/Sao_Paulo}"
+      SERVER_NAME: "${MINECRAFT_BEDROCK_SERVER_NAME:-Nitro Bedrock}"
+      LEVEL_NAME: "${MINECRAFT_BEDROCK_LEVEL_NAME:-Nitro-Bedrock}"
+      GAMEMODE: "${MINECRAFT_BEDROCK_GAMEMODE:-survival}"
+      DIFFICULTY: "${MINECRAFT_BEDROCK_DIFFICULTY:-normal}"
+      MAX_PLAYERS: "${MINECRAFT_BEDROCK_MAX_PLAYERS:-10}"
+      ONLINE_MODE: "true"
+      ALLOW_LIST: "${MINECRAFT_BEDROCK_ALLOW_LIST:-false}"
+      VIEW_DISTANCE: "32"
+      TICK_DISTANCE: "4"
+    volumes:
+      - "${APPDATA_DIR}/minecraft-bedrock:/data"
+    tty: true
+    stdin_open: true
 
   adguard-home:
     image: adguard/adguardhome:latest
@@ -144,6 +309,72 @@ services:
       - "${APPDATA_DIR}/adguard/work:/opt/adguardhome/work"
       - "${APPDATA_DIR}/adguard/conf:/opt/adguardhome/conf"
 
+  file-drop:
+    build:
+      context: ./file-drop
+    image: nitro/file-drop-smb:latest
+    container_name: file-drop
+    profiles: ["drop"]
+    network_mode: host
+    restart: unless-stopped
+    environment:
+      PUID: "${PUID:-1000}"
+      PGID: "${PGID:-1000}"
+      FILE_DROP_SHARE_NAME: "${FILE_DROP_SHARE_NAME:-drop}"
+      FILE_DROP_WORKGROUP: "${FILE_DROP_WORKGROUP:-WORKGROUP}"
+      FILE_DROP_NETBIOS_NAME: "${FILE_DROP_NETBIOS_NAME:-NITRO-DROP}"
+      FILE_DROP_HOSTNAME: "${FILE_DROP_HOSTNAME:-nitro-drop}"
+      FILE_DROP_GUEST_USER: "${FILE_DROP_GUEST_USER:-filedrop}"
+      FILE_DROP_USERNAME: "${FILE_DROP_USERNAME:-}"
+      FILE_DROP_PASSWORD: "${FILE_DROP_PASSWORD:-}"
+      FILE_DROP_MAX_SIZE: "${FILE_DROP_MAX_SIZE:-100G}"
+    volumes:
+      - "${FILE_DROP_DIR:-/srv/storage/drop}:/drop"
+    healthcheck:
+      test: ["CMD-SHELL", "test -d /drop && pgrep -x smbd >/dev/null"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  file-drop-cleanup:
+    image: nitro/file-drop-smb:latest
+    container_name: file-drop-cleanup
+    profiles: ["drop"]
+    restart: unless-stopped
+    depends_on:
+      - file-drop
+    command: /usr/local/bin/drop-cleanup
+    environment:
+      FILE_DROP_TTL_HOURS: "${FILE_DROP_TTL_HOURS:-24}"
+      FILE_DROP_MAX_SIZE: "${FILE_DROP_MAX_SIZE:-100G}"
+      FILE_DROP_CLEANUP_INTERVAL_SECONDS: "${FILE_DROP_CLEANUP_INTERVAL_SECONDS:-300}"
+      FILE_DROP_GUEST_USER: "${FILE_DROP_GUEST_USER:-filedrop}"
+    volumes:
+      - "${FILE_DROP_DIR:-/srv/storage/drop}:/drop"
+
+  file-drop-status:
+    image: python:3.12-slim
+    container_name: file-drop-status
+    profiles: ["drop"]
+    restart: unless-stopped
+    depends_on:
+      - file-drop
+    ports:
+      - "9838:9838"
+    environment:
+      FILE_DROP_DIR: /drop
+      FILE_DROP_SHARE_NAME: "${FILE_DROP_SHARE_NAME:-drop}"
+      FILE_DROP_TTL_HOURS: "${FILE_DROP_TTL_HOURS:-24}"
+      FILE_DROP_MAX_SIZE: "${FILE_DROP_MAX_SIZE:-100G}"
+      FILE_DROP_SMB_HOST: host.docker.internal
+      FILE_DROP_SMB_PORT: "445"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./monitoring/file-drop-status.py:/app/file-drop-status.py:ro
+      - "${FILE_DROP_DIR:-/srv/storage/drop}:/drop"
+    command: python /app/file-drop-status.py
+
   caddy:
     image: caddy:2-alpine
     container_name: caddy
@@ -152,6 +383,9 @@ services:
     cap_add:
       - NET_BIND_SERVICE
     restart: unless-stopped
+    environment:
+      TERMINAL_USERNAME: "${TERMINAL_USERNAME:-admin}"
+      TERMINAL_PASSWORD_HASH: "${TERMINAL_PASSWORD_HASH:-$$2a$$14$$jIQCaMY0f8RQiLmV4I.dP.o/UzIIyWw/CwA2tIt8azTbcCRfIrbAG}"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - ./dashboard:/srv/dashboard:ro

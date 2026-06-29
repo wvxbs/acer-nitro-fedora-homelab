@@ -6,17 +6,40 @@
   <title>Nitro Homelab</title>
   <style>
     :root {
-      color-scheme: dark;
-      --bg: #111315;
-      --panel: #1b1f23;
-      --panel-2: #22272d;
-      --text: #f3f5f7;
-      --muted: #aab2bc;
-      --line: #333a42;
-      --ok: #43d17a;
-      --bad: #ff6b6b;
-      --wait: #ffd166;
-      --accent: #7cc7ff;
+      color-scheme: light dark;
+      --bg: #f5f7fa;
+      --surface: #ffffff;
+      --surface-2: #eef2f6;
+      --surface-3: #e4e9ef;
+      --text: #17202a;
+      --muted: #5b6877;
+      --line: #d6dee8;
+      --ok: #167a45;
+      --bad: #b4232b;
+      --wait: #a16207;
+      --accent: #0f6cbd;
+      --accent-strong: #0958a5;
+      --on-accent: #ffffff;
+      --shadow: 0 12px 30px rgb(20 32 45 / 8%);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #101216;
+        --surface: #191d23;
+        --surface-2: #222832;
+        --surface-3: #2b3340;
+        --text: #f4f7fb;
+        --muted: #a9b4c2;
+        --line: #303946;
+        --ok: #45d483;
+        --bad: #ff6f76;
+        --wait: #f6c65b;
+        --accent: #72bfff;
+        --accent-strong: #a8d8ff;
+        --on-accent: #07121f;
+        --shadow: 0 14px 34px rgb(0 0 0 / 28%);
+      }
     }
 
     * {
@@ -60,21 +83,82 @@
       font-size: 1rem;
     }
 
-    .refresh {
+    .actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       border: 1px solid var(--line);
-      background: var(--panel-2);
+      background: var(--surface-2);
       color: var(--text);
       min-height: 44px;
       padding: 0 16px;
       border-radius: 8px;
       font-weight: 650;
+      text-decoration: none;
       cursor: pointer;
+    }
+
+    .button.primary {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: var(--on-accent);
+    }
+
+    .button:focus,
+    .button:hover {
+      border-color: var(--accent-strong);
+      outline: 2px solid transparent;
+      transform: translateY(-1px);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin: 0 0 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .tab {
+      appearance: none;
+      border: 0;
+      border-bottom: 3px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      min-height: 42px;
+      padding: 0 12px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .tab:hover,
+    .tab:focus {
+      color: var(--text);
+      outline: none;
+    }
+
+    .tab[aria-selected="true"] {
+      border-bottom-color: var(--accent);
+      color: var(--text);
+    }
+
+    .panel[hidden] {
+      display: none;
     }
 
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-      gap: 12px;
+      gap: 14px;
     }
 
     a.card {
@@ -84,15 +168,18 @@
       padding: 16px;
       border: 1px solid var(--line);
       border-radius: 8px;
-      background: var(--panel);
+      background: var(--surface);
+      box-shadow: var(--shadow);
       color: inherit;
       text-decoration: none;
+      transition: border-color .16s ease, transform .16s ease, box-shadow .16s ease;
     }
 
     a.card:focus,
     a.card:hover {
       border-color: var(--accent);
       outline: none;
+      transform: translateY(-2px);
     }
 
     .topline {
@@ -121,14 +208,17 @@
       height: 10px;
       border-radius: 999px;
       background: var(--wait);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--wait), transparent 78%);
     }
 
     .online .dot {
       background: var(--ok);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok), transparent 78%);
     }
 
     .offline .dot {
       background: var(--bad);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--bad), transparent 78%);
     }
 
     .desc {
@@ -143,18 +233,113 @@
       font-size: .93rem;
     }
 
-    .notice {
-      margin: 0 0 16px;
-      padding: 14px 16px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--panel);
+    .cheatsheet {
+      display: grid;
+      gap: 18px;
+    }
+
+    .cheatsheet h2 {
+      margin: 0;
+      font-size: 1.15rem;
+    }
+
+    .cheatsheet p {
+      margin: 0;
       color: var(--muted);
       line-height: 1.4;
     }
 
-    .notice a {
+    .drop-header {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: 1fr auto;
+      align-items: start;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .drop-header h2 {
+      margin: 0 0 6px;
+    }
+
+    .drop-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .drop-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+    }
+
+    .stat {
+      display: grid;
+      gap: 5px;
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .stat strong {
+      color: var(--text);
+      overflow-wrap: anywhere;
+    }
+
+    .cheat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 12px;
+    }
+
+    .cheat {
+      display: grid;
+      gap: 7px;
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface-2);
+    }
+
+    .cheat strong {
+      color: var(--text);
+    }
+
+    code {
       color: var(--accent);
+      overflow-wrap: anywhere;
+    }
+
+    .lan-access {
+      margin-top: 18px;
+      color: var(--muted);
+    }
+
+    .lan-access summary {
+      cursor: pointer;
+      width: fit-content;
+      color: var(--muted);
+      font-weight: 650;
+    }
+
+    .lan-access[open] summary {
+      color: var(--text);
+    }
+
+    .lan-access .button {
+      margin-top: 10px;
     }
 
     footer {
@@ -168,9 +353,28 @@
         display: block;
       }
 
-      .refresh {
+      .actions,
+      .button,
+      .drop-actions {
         width: 100%;
+        justify-content: stretch;
+      }
+
+      .button {
         margin-top: 16px;
+      }
+
+      .drop-actions .button,
+      .lan-access .button {
+        margin-top: 0;
+      }
+
+      .tabs {
+        overflow-x: auto;
+      }
+
+      .drop-header {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -182,18 +386,95 @@
         <h1>Nitro Homelab</h1>
         <p class="subtitle">Links e status dos servicos locais.</p>
       </div>
-      <button class="refresh" id="refresh" type="button">Atualizar status</button>
+      <div class="actions">
+        <button class="button primary" id="refresh" type="button">Atualizar status</button>
+      </div>
     </header>
 
-    <p class="notice">
-      Para remover avisos de certificado, instale a CA local:
-      <a href="http://nitro.lan/ca/root.crt">baixar root.crt</a>.
-    </p>
+    <nav class="tabs" role="tablist" aria-label="Secoes">
+      <button class="tab" type="button" id="tab-services" role="tab" aria-controls="panel-services" aria-selected="true">Servicos</button>
+      <button class="tab" type="button" id="tab-filedrop" role="tab" aria-controls="panel-filedrop" aria-selected="false">File Drop</button>
+    </nav>
 
-    <section class="grid" id="services"></section>
+    <section class="panel" id="panel-services" role="tabpanel" aria-labelledby="tab-services">
+      <section class="grid" id="services"></section>
+    </section>
+
+    <section class="panel" id="panel-filedrop" role="tabpanel" aria-labelledby="tab-filedrop" hidden>
+      <div class="cheatsheet">
+        <div class="drop-header">
+          <div>
+            <h2 id="filedrop-title">File Drop</h2>
+            <p>Pasta temporaria SMB3 para transferencias rapidas na LAN. TTL 24h, limite alvo 100G. Acesso como visitante, sem usuario e sem senha.</p>
+          </div>
+          <div class="drop-actions">
+            <a class="button primary" href="smb://192.168.15.8/drop">Abrir SMB</a>
+            <a class="button" href="https://filedrop.nitro.lan">Status</a>
+          </div>
+        </div>
+        <div class="drop-stats" aria-label="Status do File Drop">
+          <div class="stat">
+            <span>SMB</span>
+            <strong id="drop-smb">testando</strong>
+          </div>
+          <div class="stat">
+            <span>Itens</span>
+            <strong id="drop-entries">-</strong>
+          </div>
+          <div class="stat">
+            <span>Uso</span>
+            <strong id="drop-usage">-</strong>
+          </div>
+          <div class="stat">
+            <span>Livre</span>
+            <strong id="drop-free">-</strong>
+          </div>
+          <div class="stat">
+            <span>TTL</span>
+            <strong id="drop-ttl">-</strong>
+          </div>
+          <div class="stat">
+            <span>UNC</span>
+            <strong id="drop-unc">\\192.168.15.8\drop</strong>
+          </div>
+        </div>
+        <div class="cheat-grid">
+          <div class="cheat">
+            <strong>Windows 11</strong>
+            <code>\\192.168.15.8\drop</code>
+            <p>Explorer → barra de endereco. Entre como convidado/guest quando o cliente oferecer essa opcao.</p>
+          </div>
+          <div class="cheat">
+            <strong>macOS Finder</strong>
+            <code>smb://192.168.15.8/drop</code>
+            <p>Finder → Ir → Conectar ao Servidor. Escolha Convidado.</p>
+          </div>
+          <div class="cheat">
+            <strong>GNOME Files</strong>
+            <code>smb://192.168.15.8/drop</code>
+            <p>Arquivos → Outros Locais. Escolha Anonimo/Convidado.</p>
+          </div>
+          <div class="cheat">
+            <strong>KDE Dolphin</strong>
+            <code>smb://192.168.15.8/drop</code>
+            <p>Dolphin → barra de localizacao. Escolha Anonimo/Convidado.</p>
+          </div>
+          <div class="cheat">
+            <strong>Linux terminal</strong>
+            <code>gio open smb://192.168.15.8/drop</code>
+            <p>Abre no gerenciador de arquivos padrao.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <details class="lan-access">
+      <summary>Acesso por IP</summary>
+      <a class="button" href="http://192.168.15.8">Abrir http://192.168.15.8</a>
+    </details>
 
     <footer>
-      DNS local: 192.168.15.8. Acesse este painel em https://nitro.lan.
+      DNS local: 192.168.15.8. Acesse este painel em https://nitro.lan ou http://192.168.15.8.
     </footer>
   </main>
 
@@ -218,6 +499,12 @@
         desc: "Projeto de teste em Streamlit."
       },
       {
+        name: "Nitro Telemetria",
+        url: "https://performance.nitro.lan",
+        health: "/health/performance",
+        desc: "CPU, GPU, RAM, VRAM, bateria, discos, rede, temperaturas e graficos."
+      },
+      {
         name: "Jellyfin",
         url: "https://jellyfin.nitro.lan",
         health: "/health/jellyfin",
@@ -227,13 +514,14 @@
         name: "Glances",
         url: "https://glances.nitro.lan",
         health: "/health/glances",
-        desc: "Monitoramento estilo btop pela web."
+        desc: "Referencia completa estilo btop pela web."
       },
       {
-        name: "Nitro GPU",
-        url: "https://gpu.nitro.lan",
-        health: "/health/gpu",
-        desc: "GTX 1650, VRAM, temperatura e energia via nvidia-smi."
+        name: "Terminal",
+        url: "https://terminal.nitro.lan",
+        health: "/health/terminal",
+        okStatuses: [200, 401],
+        desc: "Shell do host pelo browser, com login proprio e perfil dedicado."
       },
       {
         name: "Open WebUI",
@@ -242,11 +530,18 @@
         desc: "Chat local para modelos do Nitro."
       },
       {
+        name: "OpenClaw",
+        url: "https://openclaw.nitro.lan",
+        health: "/health/openclaw",
+        desc: "Agente pessoal local usando Ollama."
+      },
+      {
         name: "Ollama API",
         url: "https://ollama.nitro.lan",
         health: "/health/ollama",
         desc: "Runtime de modelos locais."
-      },      {
+      },
+      {
         name: "Portainer",
         url: "https://portainer.nitro.lan",
         health: "/health/portainer",
@@ -261,6 +556,16 @@
     ];
 
     const grid = document.getElementById("services");
+    const tabs = Array.from(document.querySelectorAll(".tab"));
+    const panels = Array.from(document.querySelectorAll(".panel"));
+    const dropFields = {
+      smb: document.getElementById("drop-smb"),
+      entries: document.getElementById("drop-entries"),
+      usage: document.getElementById("drop-usage"),
+      free: document.getElementById("drop-free"),
+      ttl: document.getElementById("drop-ttl"),
+      unc: document.getElementById("drop-unc")
+    };
 
     function render() {
       grid.innerHTML = services.map((service, index) => `
@@ -288,7 +593,8 @@
           cache: "no-store",
           signal: controller.signal
         });
-        if (!response.ok) throw new Error(String(response.status));
+        const okStatuses = service.okStatuses ?? [];
+        if (!response.ok && !okStatuses.includes(response.status)) throw new Error(String(response.status));
         card.classList.add("online");
         label.textContent = "online";
       } catch (error) {
@@ -303,7 +609,44 @@
       document.querySelectorAll(".card").forEach((card) => {
         check(services[Number(card.dataset.index)], card);
       });
+      refreshFileDrop();
     }
+
+    function gib(value) {
+      if (typeof value !== "number") return "-";
+      return `${value.toFixed(1)} GiB`;
+    }
+
+    async function refreshFileDrop() {
+      try {
+        const response = await fetch("/health/filedrop", { cache: "no-store" });
+        if (!response.ok) throw new Error(String(response.status));
+        const data = await response.json();
+        dropFields.smb.textContent = data.smb_online ? "online" : "offline";
+        dropFields.entries.textContent = String(data.stats?.entries ?? "-");
+        dropFields.usage.textContent = `${gib(data.stats?.used_gib)} / ${data.max_size ?? "-"}`;
+        dropFields.free.textContent = gib(data.stats?.free_gib);
+        dropFields.ttl.textContent = `${data.ttl_hours ?? "-"}h`;
+        dropFields.unc.textContent = data.unc ?? "\\\\192.168.15.8\\drop";
+      } catch (error) {
+        dropFields.smb.textContent = "offline";
+      }
+    }
+
+    function selectTab(tab) {
+      tabs.forEach((item) => {
+        const isSelected = item === tab;
+        item.setAttribute("aria-selected", String(isSelected));
+      });
+
+      panels.forEach((panel) => {
+        panel.hidden = panel.id !== tab.getAttribute("aria-controls");
+      });
+    }
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => selectTab(tab));
+    });
 
     document.getElementById("refresh").addEventListener("click", refresh);
     render();

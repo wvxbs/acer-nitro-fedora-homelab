@@ -14,10 +14,13 @@ log "Starting Fedora homelab bootstrap for $HOMELAB_HOSTNAME"
 "$ROOT/scripts/10-system.sh"
 "$ROOT/scripts/20-docker.sh"
 "$ROOT/scripts/30-nvidia.sh"
+"$ROOT/scripts/35-power-tuning.sh"
 "$ROOT/scripts/40-storage.sh"
 "$ROOT/scripts/50-ssh-network.sh"
+"$ROOT/scripts/55-network-failover.sh"
 "$ROOT/scripts/60-rclone.sh"
 "$ROOT/scripts/70-services.sh"
+"$ROOT/scripts/72-minecraft.sh"
 "$ROOT/scripts/90-family-access.sh"
 
 if [[ "$INSTALL_AI" == "1" ]]; then

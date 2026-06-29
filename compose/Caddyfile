@@ -17,6 +17,12 @@
   }
 }
 
+(terminal_auth) {
+  basic_auth {
+    {$TERMINAL_USERNAME:admin} {$TERMINAL_PASSWORD_HASH}
+  }
+}
+
 http://nitro.lan {
   handle /ca/root.crt {
     root * /data/caddy/pki/authorities/local
@@ -30,25 +36,22 @@ http://nitro.lan {
 http://adguard.nitro.lan,
 http://cockpit.nitro.lan,
 http://telemetry.nitro.lan,
+http://performance.nitro.lan,
 http://jellyfin.nitro.lan,
 http://openwebui.nitro.lan,
+http://terminal.nitro.lan,
+http://openclaw.nitro.lan,
 http://ollama.nitro.lan,
 http://portainer.nitro.lan,
 http://dozzle.nitro.lan,
 http://glances.nitro.lan,
-http://gpu.nitro.lan {
+http://gpu.nitro.lan,
+http://filedrop.nitro.lan {
   redir https://{host}{uri} 308
 }
 
-https://nitro.lan {
-  import local_tls
+(dashboard) {
   root * /srv/dashboard
-
-  handle /ca/root.crt {
-    root * /data/caddy/pki/authorities/local
-    rewrite * /root.crt
-    file_server
-  }
 
   handle /health/caddy {
     respond "ok" 200
@@ -70,6 +73,10 @@ https://nitro.lan {
     reverse_proxy http://127.0.0.1:8501
   }
 
+  handle_path /health/performance {
+    reverse_proxy http://127.0.0.1:9837
+  }
+
   handle_path /health/jellyfin {
     rewrite * /System/Info/Public
     reverse_proxy http://127.0.0.1:8096
@@ -78,6 +85,15 @@ https://nitro.lan {
   handle_path /health/openwebui {
     rewrite * /health
     reverse_proxy http://127.0.0.1:3000
+  }
+
+  handle_path /health/terminal {
+    respond "ok" 200
+  }
+
+  handle_path /health/openclaw {
+    rewrite * /healthz
+    reverse_proxy http://127.0.0.1:18789
   }
 
   handle_path /health/ollama {
@@ -103,10 +119,31 @@ https://nitro.lan {
   }
 
   handle_path /health/gpu {
-    reverse_proxy http://127.0.0.1:9836
+    reverse_proxy http://127.0.0.1:9837
+  }
+
+  handle_path /health/filedrop {
+    rewrite * /health
+    reverse_proxy http://127.0.0.1:9838
   }
 
   file_server
+}
+
+https://nitro.lan {
+  import local_tls
+
+  handle /ca/root.crt {
+    root * /data/caddy/pki/authorities/local
+    rewrite * /root.crt
+    file_server
+  }
+
+  import dashboard
+}
+
+http://192.168.15.8 {
+  import dashboard
 }
 
 https://cockpit.nitro.lan {
@@ -124,6 +161,11 @@ https://telemetry.nitro.lan {
   reverse_proxy http://127.0.0.1:8501
 }
 
+https://performance.nitro.lan {
+  import local_tls
+  reverse_proxy http://127.0.0.1:9837
+}
+
 https://jellyfin.nitro.lan {
   import local_tls
   reverse_proxy http://127.0.0.1:8096
@@ -132,6 +174,17 @@ https://jellyfin.nitro.lan {
 https://openwebui.nitro.lan {
   import local_tls
   reverse_proxy http://127.0.0.1:3000
+}
+
+https://terminal.nitro.lan {
+  import local_tls
+  import terminal_auth
+  reverse_proxy http://127.0.0.1:7681
+}
+
+https://openclaw.nitro.lan {
+  import local_tls
+  reverse_proxy http://127.0.0.1:18789
 }
 
 https://ollama.nitro.lan {
@@ -160,5 +213,10 @@ https://glances.nitro.lan {
 
 https://gpu.nitro.lan {
   import local_tls
-  reverse_proxy http://127.0.0.1:9836
+  reverse_proxy http://127.0.0.1:9837
+}
+
+https://filedrop.nitro.lan {
+  import local_tls
+  reverse_proxy http://127.0.0.1:9838
 }

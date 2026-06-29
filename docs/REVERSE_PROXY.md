@@ -19,11 +19,14 @@ https://cockpit.nitro.lan
 https://telemetry.nitro.lan
 https://jellyfin.nitro.lan
 https://openwebui.nitro.lan
+https://openclaw.nitro.lan
 https://ollama.nitro.lan
 https://portainer.nitro.lan
 https://dozzle.nitro.lan
 https://glances.nitro.lan
+http://terminal.nitro.lan
 https://gpu.nitro.lan
+https://filedrop.nitro.lan
 ```
 
 The base dashboard is intentionally simple and mobile-friendly. It is served by
@@ -68,11 +71,14 @@ cockpit.nitro.lan      -> 192.168.15.8
 telemetry.nitro.lan    -> 192.168.15.8
 jellyfin.nitro.lan     -> 192.168.15.8
 openwebui.nitro.lan    -> 192.168.15.8
+openclaw.nitro.lan     -> 192.168.15.8
 ollama.nitro.lan       -> 192.168.15.8
 portainer.nitro.lan    -> 192.168.15.8
 dozzle.nitro.lan       -> 192.168.15.8
 glances.nitro.lan      -> 192.168.15.8
+terminal.nitro.lan     -> 192.168.15.8
 gpu.nitro.lan          -> 192.168.15.8
+filedrop.nitro.lan     -> 192.168.15.8
 ```
 
 ## Validation
@@ -82,5 +88,7 @@ curl -k -I https://nitro.lan/
 curl -k -I https://nitro.lan/health/jellyfin
 curl -k -I https://nitro.lan/health/adguard
 curl -k -I https://glances.nitro.lan/
+curl -I http://terminal.nitro.lan/
 curl -k -I https://gpu.nitro.lan/
+curl -k https://filedrop.nitro.lan/health
 ```

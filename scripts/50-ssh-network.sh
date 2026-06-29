@@ -20,7 +20,25 @@ firewall-cmd --permanent --add-port=3001/tcp
 firewall-cmd --permanent --add-port=9443/tcp
 firewall-cmd --permanent --add-port=9999/tcp
 firewall-cmd --permanent --add-port=11434/tcp
+firewall-cmd --permanent --add-service=samba
+firewall-cmd --permanent --add-port=3702/udp
+firewall-cmd --permanent --add-port=5357/tcp
 firewall-cmd --reload
+
+install -d -m 0755 /etc/avahi/services
+cat > /etc/avahi/services/file-drop.service <<EOF
+<?xml version="1.0" standalone='no'?><!--*-nxml-*-->
+<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+<service-group>
+  <name replace-wildcards="yes">Nitro File Drop on %h</name>
+  <service>
+    <type>_smb._tcp</type>
+    <port>445</port>
+    <txt-record>path=/${FILE_DROP_SHARE_NAME}</txt-record>
+  </service>
+</service-group>
+EOF
+systemctl restart avahi-daemon.service || true
 
 install -d -m 0755 /etc/ssh/sshd_config.d
 cat > /etc/ssh/sshd_config.d/99-homelab.conf <<'EOF'

@@ -11,11 +11,11 @@ shows CPU, memory, disk, network, processes and Docker containers. The container
 also receives NVIDIA runtime flags so compatible GPU metrics can appear when the
 Glances image and host driver expose them.
 
-Start it with the ops profile:
+Start the monitoring services with the ops profile:
 
 ```bash
 cd /opt/homelab
-docker compose --profile ops up -d glances
+docker compose --profile ops up -d glances performance-web
 ```
 
 For direct CLI checks on the host:
@@ -27,15 +27,20 @@ free -h
 df -h
 ```
 
-If GPU data is missing from Glances, `nvidia-smi` remains the source of truth for
-GTX 1650 utilization, VRAM, temperature and power state.
+If GPU data is missing from Glances, `nvidia-smi` remains the CLI source of truth
+for GTX 1650 utilization, VRAM, temperature and power state.
 
-The homelab also exposes a tiny NVIDIA-specific page backed by `nvidia-smi`:
+The homelab exposes one consolidated telemetry page:
 
 ```text
-https://gpu.nitro.lan
-https://gpu.nitro.lan/json
+https://performance.nitro.lan
+https://performance.nitro.lan/api
 ```
 
-This is intentionally simpler than a full metrics stack and is meant for quick
-checks from a phone or browser.
+It shows CPU, NVIDIA GPU, RAM, VRAM, battery, disks, network, temperatures,
+processes, containers and lightweight browser-side charts. `https://gpu.nitro.lan`
+is kept as a compatibility alias to the same page.
+
+The repo also keeps the latest standalone `/opt/homelab/performance/server.py`
+snapshot under `compose/performance/server.py`, and the current Compose service
+uses that file directly.
