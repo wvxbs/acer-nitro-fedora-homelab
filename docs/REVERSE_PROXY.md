@@ -23,10 +23,17 @@ https://openclaw.nitro.lan
 https://ollama.nitro.lan
 https://portainer.nitro.lan
 https://dozzle.nitro.lan
+<<<<<<< HEAD
 https://glances.nitro.lan
 http://terminal.nitro.lan
 https://gpu.nitro.lan
 https://filedrop.nitro.lan
+=======
+https://performance.nitro.lan
+https://security.nitro.lan
+https://rcfeventos.nitro.lan
+https://processes.nitro.lan
+>>>>>>> 9a4b7e52047b549a129e43f913666598542107e9
 ```
 
 The base dashboard is intentionally simple and mobile-friendly. It is served by
@@ -75,10 +82,17 @@ openclaw.nitro.lan     -> 192.168.15.8
 ollama.nitro.lan       -> 192.168.15.8
 portainer.nitro.lan    -> 192.168.15.8
 dozzle.nitro.lan       -> 192.168.15.8
+<<<<<<< HEAD
 glances.nitro.lan      -> 192.168.15.8
 terminal.nitro.lan     -> 192.168.15.8
 gpu.nitro.lan          -> 192.168.15.8
 filedrop.nitro.lan     -> 192.168.15.8
+=======
+performance.nitro.lan  -> 192.168.15.8
+security.nitro.lan     -> 192.168.15.8
+rcfeventos.nitro.lan   -> 192.168.15.8
+processes.nitro.lan    -> 192.168.15.8
+>>>>>>> 9a4b7e52047b549a129e43f913666598542107e9
 ```
 
 ## Validation
@@ -87,8 +101,17 @@ filedrop.nitro.lan     -> 192.168.15.8
 curl -k -I https://nitro.lan/
 curl -k -I https://nitro.lan/health/jellyfin
 curl -k -I https://nitro.lan/health/adguard
+<<<<<<< HEAD
 curl -k -I https://glances.nitro.lan/
 curl -I http://terminal.nitro.lan/
 curl -k -I https://gpu.nitro.lan/
 curl -k https://filedrop.nitro.lan/health
+=======
+curl -k -I https://performance.nitro.lan/
+curl -k -I https://security.nitro.lan/
+curl -k -I https://processes.nitro.lan/
+curl -k -I https://nitro.lan/health/performance
+curl -k -I https://nitro.lan/health/security
+curl -k -I https://nitro.lan/health/processes
+>>>>>>> 9a4b7e52047b549a129e43f913666598542107e9
 ```

@@ -34,10 +34,16 @@ Ollama         https://ollama.nitro.lan
 Open WebUI     https://openwebui.nitro.lan
 Portainer      https://portainer.nitro.lan
 Dozzle         https://dozzle.nitro.lan
+<<<<<<< HEAD
 Glances        https://glances.nitro.lan
 Nitro Telemetry https://performance.nitro.lan (gpu.nitro.lan is an alias)
 File Drop      \\192.168.15.8\drop or smb://192.168.15.8/drop
 Host Terminal  http://terminal.nitro.lan, optional emergency browser shell
+=======
+Performance    https://performance.nitro.lan
+Security       https://security.nitro.lan
+Processes      https://processes.nitro.lan
+>>>>>>> 9a4b7e52047b549a129e43f913666598542107e9
 ```
 
 Ollama and Open WebUI are part of the AI profile. The dashboard keeps optional links visible and marks their healthcheck offline when a profile is stopped.
@@ -101,12 +107,17 @@ Cache policy: bounded VFS cache, dynamic reads from OneDrive
 ```text
 Ollama       https://ollama.nitro.lan
 Open WebUI   https://openwebui.nitro.lan
+<<<<<<< HEAD
 OpenClaw     https://openclaw.nitro.lan
 Models       llama3.2:3b, qwen2.5-coder:1.5b
 Codex CLI    installed per Linux user during that user's setup/login, not shared globally
+=======
+Models       nitro-coder, nitro-chat, llama3.2:3b, qwen2.5-coder:1.5b
+Codex CLI    available through the codex-wvxbs container and optional per-user SSH installs
+>>>>>>> 9a4b7e52047b549a129e43f913666598542107e9
 ```
 
-Codex delegation uses SSH remote projects and isolated Linux users. See `docs/REMOTE_AI_DELEGATION.md`.
+Codex delegation can use either SSH remote projects with isolated Linux users or the `codex-wvxbs` container for the main admin account. See `docs/REMOTE_AI_DELEGATION.md`.
 
 ## Family Access
 
@@ -159,5 +170,6 @@ Useful commands:
 cd /opt/homelab
 docker compose --profile dns --profile proxy --profile media up -d
 docker compose --profile ai up -d
+docker compose --profile ops up -d performance portainer dozzle
 ./scripts/healthcheck.sh
 ```

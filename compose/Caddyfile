@@ -44,9 +44,16 @@ http://openclaw.nitro.lan,
 http://ollama.nitro.lan,
 http://portainer.nitro.lan,
 http://dozzle.nitro.lan,
+<<<<<<< HEAD
 http://glances.nitro.lan,
 http://gpu.nitro.lan,
 http://filedrop.nitro.lan {
+=======
+http://performance.nitro.lan,
+http://security.nitro.lan,
+http://rcfeventos.nitro.lan,
+http://processes.nitro.lan {
+>>>>>>> 9a4b7e52047b549a129e43f913666598542107e9
   redir https://{host}{uri} 308
 }
 
@@ -102,8 +109,10 @@ http://filedrop.nitro.lan {
   }
 
   handle_path /health/portainer {
-    rewrite * /api/status
+    rewrite * /api/system/status
     reverse_proxy https://127.0.0.1:9443 {
+      header_up Host {host}
+      header_up X-Forwarded-Host {host}
       transport http {
         tls_insecure_skip_verify
       }
@@ -114,15 +123,24 @@ http://filedrop.nitro.lan {
     reverse_proxy http://127.0.0.1:9999
   }
 
-  handle_path /health/glances {
+  handle_path /health/processes {
     reverse_proxy http://127.0.0.1:61208
   }
 
+<<<<<<< HEAD
   handle_path /health/gpu {
     reverse_proxy http://127.0.0.1:9837
   }
 
   handle_path /health/filedrop {
+=======
+  handle_path /health/performance {
+    rewrite * /health
+    reverse_proxy http://127.0.0.1:9837
+  }
+
+  handle_path /health/security {
+>>>>>>> 9a4b7e52047b549a129e43f913666598542107e9
     rewrite * /health
     reverse_proxy http://127.0.0.1:9838
   }
@@ -195,6 +213,8 @@ https://ollama.nitro.lan {
 https://portainer.nitro.lan {
   import local_tls
   reverse_proxy https://127.0.0.1:9443 {
+    header_up Host {host}
+    header_up X-Forwarded-Host {host}
     transport http {
       tls_insecure_skip_verify
     }
@@ -206,10 +226,28 @@ https://dozzle.nitro.lan {
   reverse_proxy http://127.0.0.1:9999
 }
 
-https://glances.nitro.lan {
+https://performance.nitro.lan {
+  import local_tls
+  reverse_proxy http://127.0.0.1:9837
+}
+
+https://security.nitro.lan {
+  import local_tls
+  reverse_proxy http://127.0.0.1:9838
+}
+
+https://rcfeventos.nitro.lan {
+  import local_tls
+  root * /srv/sites/rcfeventos
+  try_files {path} {path}/ /index.html
+  file_server
+}
+
+https://processes.nitro.lan {
   import local_tls
   reverse_proxy http://127.0.0.1:61208
 }
+<<<<<<< HEAD
 
 https://gpu.nitro.lan {
   import local_tls
@@ -220,3 +258,5 @@ https://filedrop.nitro.lan {
   import local_tls
   reverse_proxy http://127.0.0.1:9838
 }
+=======
+>>>>>>> 9a4b7e52047b549a129e43f913666598542107e9

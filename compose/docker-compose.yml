@@ -80,17 +80,20 @@ services:
     ports:
       - "61208:61208"
     environment:
-      GLANCES_OPT: "-w"
-      NVIDIA_VISIBLE_DEVICES: all
-      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+      GLANCES_OPT: "-w --disable-plugin gpu"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /etc/os-release:/etc/os-release:ro
-    gpus: all
 
+<<<<<<< HEAD
   performance-web:
     image: python:3.12-slim
     container_name: performance-web
+=======
+  performance:
+    image: python:3.12-slim
+    container_name: performance
+>>>>>>> 9a4b7e52047b549a129e43f913666598542107e9
     profiles: ["ops"]
     restart: unless-stopped
     ports:
@@ -102,7 +105,12 @@ services:
       NITRO_DEBUG_PATH: /host/debug
       NVIDIA_VISIBLE_DEVICES: all
       NVIDIA_DRIVER_CAPABILITIES: compute,utility
+      HOST_PROC: /host/proc
+      HOST_SYS: /host/sys
+      HOST_DEBUG: /host/debug
+      NVIDIA_POLL_SECONDS: "30"
     volumes:
+<<<<<<< HEAD
       - ./performance/server.py:/app/performance-web.py:ro
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
@@ -134,6 +142,46 @@ services:
     read_only: true
     tmpfs:
       - /tmp
+=======
+      - ./performance/server.py:/app/server.py:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /sys/kernel/debug:/host/debug:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command: python /app/server.py
+    gpus: all
+
+  security:
+    image: python:3.12-slim
+    container_name: security
+    profiles: ["ops"]
+    restart: unless-stopped
+    ports:
+      - "9838:9838"
+    environment:
+      SECURITY_DATA_DIR: /data
+      SECURITY_PORT: "9838"
+    volumes:
+      - ./security/server.py:/app/server.py:ro
+      - "${SECURITY_DATA_DIR:-/srv/appdata/security}:/data:ro"
+    command: python /app/server.py
+
+  codex-wvxbs:
+    build:
+      context: ./codex-runner
+    image: nitro/codex-runner:latest
+    container_name: codex-wvxbs
+    profiles: ["ai"]
+    restart: unless-stopped
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+      OPENAI_BASE_URL: http://ollama:11434/v1
+      CODEX_HOME: /home/node/.codex
+    volumes:
+      - "${APPDATA_DIR}/codex/wvxbs/home:/home/node"
+      - /home/wvxbs/projects:/workspace
+    working_dir: /workspace
+>>>>>>> 9a4b7e52047b549a129e43f913666598542107e9
 
   ollama:
     image: ollama/ollama:latest
@@ -145,6 +193,9 @@ services:
     environment:
       NVIDIA_VISIBLE_DEVICES: all
       NVIDIA_DRIVER_CAPABILITIES: compute,utility
+      OLLAMA_KEEP_ALIVE: "10m"
+      OLLAMA_NUM_PARALLEL: "1"
+      OLLAMA_MAX_LOADED_MODELS: "1"
     volumes:
       - "${OLLAMA_MODELS_DIR}:/root/.ollama"
     gpus: all
@@ -389,5 +440,6 @@ services:
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - ./dashboard:/srv/dashboard:ro
+      - ./sites:/srv/sites:ro
       - "${APPDATA_DIR}/caddy/data:/data"
       - "${APPDATA_DIR}/caddy/config:/config"

@@ -1,24 +1,35 @@
 # Monitoring
 
-The quick web monitor is Glances:
+The homelab exposes a consolidated performance endpoint:
 
 ```text
-https://glances.nitro.lan
+https://performance.nitro.lan
 ```
 
-It is the browser-friendly equivalent of `btop`/`bashtop` for this homelab. It
-shows CPU, memory, disk, network, processes and Docker containers. The container
-also receives NVIDIA runtime flags so compatible GPU metrics can appear when the
-Glances image and host driver expose them.
+It shows the compact dashboard: CPU per core, load, CPU package power, frequency, memory, disk, network, disk I/O, temperatures, Docker containers, NVIDIA GTX 1650 data and Intel iGPU state.
 
+<<<<<<< HEAD
 Start the monitoring services with the ops profile:
 
 ```bash
 cd /opt/homelab
 docker compose --profile ops up -d glances performance-web
+=======
+For richer process inspection, use the Glances page linked from the dashboard:
+
+```text
+https://processes.nitro.lan
 ```
 
-For direct CLI checks on the host:
+Start the ops profile:
+
+```bash
+cd /opt/homelab
+docker compose --profile ops up -d performance glances portainer dozzle
+>>>>>>> 9a4b7e52047b549a129e43f913666598542107e9
+```
+
+Useful direct checks on the host:
 
 ```bash
 nvidia-smi
@@ -27,6 +38,7 @@ free -h
 df -h
 ```
 
+<<<<<<< HEAD
 If GPU data is missing from Glances, `nvidia-smi` remains the CLI source of truth
 for GTX 1650 utilization, VRAM, temperature and power state.
 
@@ -44,3 +56,20 @@ is kept as a compatibility alias to the same page.
 The repo also keeps the latest standalone `/opt/homelab/performance/server.py`
 snapshot under `compose/performance/server.py`, and the current Compose service
 uses that file directly.
+=======
+Notes:
+
+- NVIDIA polling is cached by the dashboard to reduce needless GPU wakeups.
+- Intel iGPU data comes from read-only i915 debugfs when available.
+- CPU package power comes from Intel RAPL.
+- If NVIDIA remains in `P0` while idle, reboot once after `scripts/35-power-tuning.sh` so `NVreg_DynamicPowerManagement=0x02` is applied when the module loads.
+
+
+## Security
+
+```text
+https://security.nitro.lan
+```
+
+This panel shows authentication-related events from the host journal and recent physical-console failed-login captures. Webcam/audio capture is limited to failed local TTY login events; remote services such as Cockpit and SSH are logged without media capture.
+>>>>>>> 9a4b7e52047b549a129e43f913666598542107e9

@@ -146,8 +146,14 @@ openclaw.nitro.lan
 ollama.nitro.lan
 portainer.nitro.lan
 dozzle.nitro.lan
+<<<<<<< HEAD
 terminal.nitro.lan
 filedrop.nitro.lan
+=======
+performance.nitro.lan
+security.nitro.lan
+processes.nitro.lan
+>>>>>>> 9a4b7e52047b549a129e43f913666598542107e9
 ```
 
 ## If Something Breaks

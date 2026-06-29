@@ -17,7 +17,9 @@ O objetivo e rodar tudo com o minimo de friccao:
 - File Drop opcional: pasta SMB3 temporaria na LAN para arrastar arquivos entre Windows, macOS e Linux sem login.
 - Terminal web opcional em `terminal.nitro.lan` para emergencia quando SSH nao estiver disponivel.
 - Painel local em `https://nitro.lan` com links e healthchecks dos servicos.
-- Monitoramento web com Glances e painel simples da GTX 1650 via `nvidia-smi`.
+- Monitoramento web unico em `performance.nitro.lan`, com CPU, GPU, potencia, temperatura, historico e containers.
+- Painel de seguranca em `security.nitro.lan`, com eventos auth e captura limitada a falha de login fisico TTY.
+- Suporte a sites estaticos locais, como `rcfeventos.nitro.lan`, servidos pelo Caddy.
 
 ## Uso Rapido
 
@@ -87,6 +89,7 @@ Para monitoramento rapido:
 
 ```bash
 cd /opt/homelab
+<<<<<<< HEAD
 docker compose --profile ops up -d glances performance-web
 ```
 
@@ -105,6 +108,12 @@ Configure `TERMINAL_PASSWORD`/`TERMINAL_PASSWORD_HASH` antes de subir. O Caddy
 pede login do browser e abre um shell do host depois da autenticacao. Abra
 `http://terminal.nitro.lan` e pare o container quando terminar. Leia
 `docs/HOST_TERMINAL.md`.
+=======
+docker compose --profile ops up -d performance portainer dozzle
+```
+
+Use `https://performance.nitro.lan` para CPU/RAM/disco/Docker, historico, potencia, temperatura e GTX 1650.
+>>>>>>> 9a4b7e52047b549a129e43f913666598542107e9
 
 Para IA local:
 

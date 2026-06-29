@@ -487,12 +487,6 @@
         desc: "Painel do Fedora Server."
       },
       {
-        name: "AdGuard Home",
-        url: "https://adguard.nitro.lan",
-        health: "/health/adguard",
-        desc: "DNS e bloqueio de anuncios."
-      },
-      {
         name: "Telemetry Lab",
         url: "https://telemetry.nitro.lan",
         health: "/health/telemetry",
@@ -511,6 +505,7 @@
         desc: "Midia via OneDrive sob demanda."
       },
       {
+<<<<<<< HEAD
         name: "Glances",
         url: "https://glances.nitro.lan",
         health: "/health/glances",
@@ -522,6 +517,24 @@
         health: "/health/terminal",
         okStatuses: [200, 401],
         desc: "Shell do host pelo browser, com login proprio e perfil dedicado."
+=======
+        name: "Performance",
+        url: "https://performance.nitro.lan",
+        health: "/health/performance",
+        desc: "CPU, GPU, potencia, temperatura, historico e containers."
+      },
+      {
+        name: "Seguranca",
+        url: "https://security.nitro.lan",
+        health: "/health/security",
+        desc: "Falhas de login, eventos auth e capturas do TTY fisico."
+      },
+      {
+        name: "Processos",
+        url: "https://processes.nitro.lan",
+        health: "/health/processes",
+        desc: "Visao detalhada estilo Glances para processos e sistema."
+>>>>>>> 9a4b7e52047b549a129e43f913666598542107e9
       },
       {
         name: "Open WebUI",

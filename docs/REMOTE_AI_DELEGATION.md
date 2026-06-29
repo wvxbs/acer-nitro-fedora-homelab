@@ -119,6 +119,51 @@ In Codex App:
 
 The prompts and approvals happen from the personal device. Commands and file edits happen on the Nitro under the selected Linux user.
 
+
+## Containerized Codex Runner
+
+For the main admin account, the stack also includes a persistent Codex container:
+
+```bash
+cd /opt/homelab
+docker compose --profile ai up -d codex-wvxbs
+```
+
+The container stores its Linux home directory and Codex state under:
+
+```text
+${APPDATA_DIR}/codex/wvxbs/home
+```
+
+Inside the container this is mounted as `/home/node`, with Codex state in `/home/node/.codex`.
+
+Projects are mounted from the host into:
+
+```text
+/workspace
+```
+
+Authenticate inside the container when needed:
+
+```bash
+docker exec -it codex-wvxbs codex login --device-auth
+```
+
+Run an interactive shell:
+
+```bash
+docker exec -it codex-wvxbs bash
+```
+
+Run a one-shot task against a cloned project:
+
+```bash
+docker exec -it -w /workspace/acer-nitro-fedora-homelab codex-wvxbs \
+  codex exec --sandbox workspace-write "summarize current git status"
+```
+
+This is useful for Portainer-managed, always-on Codex jobs under the `wvxbs` admin context. For your mother and father, keep the per-user SSH pattern unless we intentionally add separate containers and separate Codex auth volumes for each person.
+
 ## Codex Automation
 
 For one-shot private jobs:
@@ -156,6 +201,15 @@ http://192.168.15.8:11434  Ollama API
 http://192.168.15.8:11434/v1 OpenAI-compatible Ollama API
 ```
 
+Configured model aliases:
+
+```text
+nitro-coder -> qwen2.5-coder:1.5b
+nitro-chat  -> llama3.2:3b
+```
+
+Use `nitro-coder` for lightweight coding/help tasks and `nitro-chat` for general chat.
+
 Open WebUI has its own login system. Create one Open WebUI account per person.
 
 ## LM Studio And LM Link Role
@@ -172,6 +226,8 @@ The always-on default service remains Nitro-hosted Ollama/Open WebUI. If a tool 
 ```text
 http://192.168.15.8:11434/v1
 ```
+
+Use model name `nitro-coder` for the default remote coding model.
 
 LM Studio also exposes OpenAI-compatible endpoints when its server is running, and its headless `llmster` daemon is a viable future alternative to Ollama if we decide LM Studio should be the server runtime. For now, avoid running both Ollama and LM Studio as competing always-on model servers on the GTX 1650 unless there is a specific test.
 

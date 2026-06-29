@@ -17,7 +17,11 @@ log "Starting Fedora homelab bootstrap for $HOMELAB_HOSTNAME"
 "$ROOT/scripts/35-power-tuning.sh"
 "$ROOT/scripts/40-storage.sh"
 "$ROOT/scripts/50-ssh-network.sh"
+<<<<<<< HEAD
 "$ROOT/scripts/55-network-failover.sh"
+=======
+"$ROOT/scripts/55-security-monitor.sh"
+>>>>>>> 9a4b7e52047b549a129e43f913666598542107e9
 "$ROOT/scripts/60-rclone.sh"
 "$ROOT/scripts/70-services.sh"
 "$ROOT/scripts/72-minecraft.sh"
